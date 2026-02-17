@@ -1,6 +1,6 @@
-// src/pages/adolescentes/CrearAdolescente.jsx
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+// src/pages/adolescentes/EditarAdolescente.jsx
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -12,54 +12,94 @@ import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import Select from '../../components/common/Select';
 
-// Esquema de validación
+// Esquema de validación (igual que en crear)
 const adolescenteSchema = yup.object().shape({
-  // Datos personales
   nombre: yup.string().required('El nombre completo es requerido'),
   iniciales: yup.string().max(10, 'Máximo 10 caracteres'),
   sexo: yup.string().required('El sexo es requerido'),
   fecha_nacimiento: yup.date().required('La fecha de nacimiento es requerida'),
-  nacionalidad: yup.string().default('Mexicana'),
-  idioma: yup.string().default('Español'),
-
-  // Lugar de nacimiento
+  nacionalidad: yup.string().default('MEXICANA'),
+  idioma: yup.string().default('ESPAÑOL'),
   lugar_nacimiento_municipio: yup.string(),
   lugar_nacimiento_estado: yup.string(),
-
-  // Información adicional
   escolaridad: yup.string(),
   ocupacion: yup.string(),
   estado_civil: yup.string(),
-
-  // Contacto
   telefono: yup.string().matches(/^[0-9]{10}$/, 'Debe ser un teléfono de 10 dígitos').nullable(),
   correo: yup.string().email('Correo inválido').nullable(),
-
-  // Domicilio
   'domicilio.municipio': yup.string(),
   'domicilio.calle_numero': yup.string(),
   'domicilio.colonia': yup.string(),
 });
 
-const CrearAdolescente = () => {
+const EditarAdolescente = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [consumeDrogas, setConsumeDrogas] = useState(false); // ✅ Estado para checkbox
+  const [isLoadingData, setIsLoadingData] = useState(true);
+  const [consumeDrogas, setConsumeDrogas] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm({
     resolver: yupResolver(adolescenteSchema),
-    defaultValues: {
-      nacionalidad: 'MEXICANA',
-      idioma: 'ESPAÑOL',
-      fuma_cigarro: false,
-      consume_alcohol: false,
-      consume_drogas: false,
-    }
   });
+
+  useEffect(() => {
+    loadAdolescente();
+  }, [id]);
+
+  const loadAdolescente = async () => {
+    setIsLoadingData(true);
+    try {
+      const response = await adolescenteService.getById(id);
+      const data = response.data || response;
+
+      // Formatear fecha para el input type="date"
+      const fechaFormateada = data.fecha_nacimiento
+        ? new Date(data.fecha_nacimiento).toISOString().split('T')[0]
+        : '';
+
+      // Normalizar sexo a mayúsculas (por si viene de BD antigua)
+      const sexoNormalizado = data.sexo ? data.sexo.toUpperCase() : '';
+
+      // Pre-llenar el formulario con los datos existentes
+      reset({
+        nombre: data.nombre || '',
+        iniciales: data.iniciales || '',
+        sexo: sexoNormalizado,  // ✅ Usar sexo normalizado
+        fecha_nacimiento: fechaFormateada,
+        nacionalidad: data.nacionalidad || 'MEXICANA',
+        idioma: data.idioma || 'ESPAÑOL',
+        otro_idioma_lengua: data.otro_idioma_lengua || '',
+        escolaridad: data.escolaridad || '',
+        ocupacion: data.ocupacion || '',
+        estado_civil: data.estado_civil || '',
+        lugar_nacimiento_municipio: data.lugar_nacimiento_municipio || '',
+        lugar_nacimiento_estado: data.lugar_nacimiento_estado || '',
+        fuma_cigarro: data.fuma_cigarro || false,
+        consume_alcohol: data.consume_alcohol || false,
+        consume_drogas: data.consume_drogas || false,
+        tipo_droga: data.tipo_droga || '',
+        telefono: data.telefono || '',
+        correo: data.correo || '',
+        'domicilio.municipio': data.domicilio?.municipio || '',
+        'domicilio.calle_numero': data.domicilio?.calle_numero || '',
+        'domicilio.colonia': data.domicilio?.colonia || '',
+      });
+
+      // Actualizar estado de consume_drogas para habilitar/deshabilitar campo
+      setConsumeDrogas(data.consume_drogas || false);
+    } catch (error) {
+      toast.error('Error al cargar el adolescente');
+      navigate('/adolescentes');
+    } finally {
+      setIsLoadingData(false);
+    }
+  };
 
   const onSubmit = async (data) => {
     setIsLoading(true);
@@ -68,7 +108,6 @@ const CrearAdolescente = () => {
       const cleanValue = (value) => {
         if (typeof value === 'string') {
           const trimmed = value.trim();
-          // Si está vacío o es solo '@', retornar null
           if (trimmed === '' || trimmed === '@') return null;
         }
         return value;
@@ -89,7 +128,7 @@ const CrearAdolescente = () => {
         nombre: data.nombre,
         iniciales: cleanValue(data.iniciales),
         sexo: data.sexo,
-        fecha_nacimiento: formatDate(data.fecha_nacimiento), // ✅ Formato correcto
+        fecha_nacimiento: formatDate(data.fecha_nacimiento),
         nacionalidad: cleanValue(data.nacionalidad) || 'MEXICANA',
         idioma: cleanValue(data.idioma) || 'ESPAÑOL',
         otro_idioma_lengua: cleanValue(data.otro_idioma_lengua),
@@ -103,7 +142,7 @@ const CrearAdolescente = () => {
         consume_drogas: data.consume_drogas || false,
         tipo_droga: cleanValue(data.tipo_droga),
         telefono: cleanValue(data.telefono),
-        correo: cleanValue(data.correo), // ✅ Limpia correos vacíos
+        correo: cleanValue(data.correo),
       };
 
       // Agregar domicilio si se proporcionó
@@ -115,17 +154,27 @@ const CrearAdolescente = () => {
         };
       }
 
-      await adolescenteService.create(adolescenteData);
+      await adolescenteService.update(id, adolescenteData);
 
-      toast.success('Adolescente creado exitosamente');
-      navigate('/adolescentes');
+      toast.success('Adolescente actualizado exitosamente');
+      navigate(`/adolescentes/${id}`);
     } catch (error) {
-      console.error('Error al crear adolescente:', error);
-      // El error ya se maneja en el interceptor
+      console.error('Error al actualizar adolescente:', error);
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (isLoadingData) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="text-gray-600">Cargando datos del adolescente...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -136,13 +185,13 @@ const CrearAdolescente = () => {
             variant="outline"
             size="sm"
             icon={ArrowLeft}
-            onClick={() => navigate('/adolescentes')}
+            onClick={() => navigate(`/adolescentes/${id}`)}
           >
             Volver
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Nuevo Adolescente</h1>
-            <p className="text-gray-600">Registrar nuevo adolescente en el sistema</p>
+            <h1 className="text-2xl font-bold text-gray-900">Editar Adolescente</h1>
+            <p className="text-gray-600">Modificar información del adolescente</p>
           </div>
         </div>
       </div>
@@ -167,7 +216,7 @@ const CrearAdolescente = () => {
 
             <Input
               label="Iniciales"
-              placeholder="Ej: JGPR"
+              placeholder="EJ: JGPR"
               error={errors.iniciales?.message}
               {...register('iniciales')}
             />
@@ -316,7 +365,7 @@ const CrearAdolescente = () => {
                 id="consume_drogas"
                 className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                 {...register('consume_drogas')}
-                onChange={(e) => setConsumeDrogas(e.target.checked)} // ✅ Actualizar estado
+                onChange={(e) => setConsumeDrogas(e.target.checked)}
               />
               <label htmlFor="consume_drogas" className="text-sm font-medium text-gray-700">
                 Consume drogas
@@ -327,7 +376,7 @@ const CrearAdolescente = () => {
               label="Tipo de Droga (si aplica)"
               placeholder="EJ: MARIHUANA, COCAÍNA"
               error={errors.tipo_droga?.message}
-              disabled={!consumeDrogas} // ✅ Desactivar si no consume drogas
+              disabled={!consumeDrogas}
               {...register('tipo_droga')}
             />
           </div>
@@ -394,7 +443,7 @@ const CrearAdolescente = () => {
           <Button
             type="button"
             variant="secondary"
-            onClick={() => navigate('/adolescentes')}
+            onClick={() => navigate(`/adolescentes/${id}`)}
             disabled={isLoading}
           >
             Cancelar
@@ -404,7 +453,7 @@ const CrearAdolescente = () => {
             icon={Save}
             isLoading={isLoading}
           >
-            Guardar Adolescente
+            Guardar Cambios
           </Button>
         </div>
       </form>
@@ -412,4 +461,4 @@ const CrearAdolescente = () => {
   );
 };
 
-export default CrearAdolescente;
+export default EditarAdolescente;

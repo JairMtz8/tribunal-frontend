@@ -12,6 +12,7 @@ import Dashboard from '../pages/dashboard/Dashboard';
 import ListaAdolescentes from '../pages/adolescentes/ListaAdolescentes';
 import CrearAdolescente from '../pages/adolescentes/CrearAdolescente';
 import DetalleAdolescente from '../pages/adolescentes/DetalleAdolescente';
+import EditarAdolescente from '../pages/adolescentes/EditarAdolescente';
 import ListaProcesos from '../pages/procesos/ListaProcesos';
 import DetalleProceso from '../pages/procesos/DetalleProceso';
 // ... más imports según necesites
@@ -74,6 +75,7 @@ const AppRoutes = () => {
           <Route path="adolescentes" element={<ListaAdolescentes />} />
           <Route path="adolescentes/nuevo" element={<CrearAdolescente />} />
           <Route path="adolescentes/:id" element={<DetalleAdolescente />} />
+          <Route path="adolescentes/:id/editar" element={<EditarAdolescente />} />
 
           {/* Procesos */}
           <Route path="procesos" element={<ListaProcesos />} />

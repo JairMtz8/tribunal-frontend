@@ -98,3 +98,55 @@ export const formatInitials = (nombre) => {
     if (words.length === 1) return words[0].substring(0, 2).toUpperCase();
     return (words[0][0] + words[words.length - 1][0]).toUpperCase();
 };
+
+/**
+ * Formatear número de teléfono
+ */
+export const formatPhone = (phone) => {
+    if (!phone) return 'No registrado';
+
+    // Formato: (777) 123-4567
+    const cleaned = phone.replace(/\D/g, '');
+    if (cleaned.length === 10) {
+        return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+    }
+
+    return phone;
+};
+
+/**
+ * Capitalizar primera letra
+ */
+export const capitalize = (str) => {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+};
+
+/**
+ * Formatear texto con mayúsculas y sin acentos
+ */
+export const formatUpperNoAccents = (str) => {
+    if (!str) return '';
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+};
+
+/**
+ * Formatear booleano a Sí/No
+ */
+export const formatBoolean = (value) => {
+    return value ? 'Sí' : 'No';
+};
+
+/**
+ * Formatear estado procesal con color
+ */
+export const getEstadoColor = (estado) => {
+    const colores = {
+        'ACTIVO': 'green',
+        'EN_PROCESO': 'blue',
+        'SUSPENDIDO': 'yellow',
+        'CONCLUIDO': 'gray',
+        'ARCHIVADO': 'red'
+    };
+    return colores[estado] || 'gray';
+};

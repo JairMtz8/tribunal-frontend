@@ -32,31 +32,31 @@ const Sidebar = ({ isOpen, onClose }) => {
       name: 'Dashboard',
       icon: LayoutDashboard,
       path: '/dashboard',
-      roles: ['Admin', 'Juzgado', 'CEMCI', 'CEMS']
+      roles: ['Administrador', 'Juzgado', 'CEMCI', 'CEMS']
     },
     {
       name: 'Adolescentes',
       icon: Users,
       path: '/adolescentes',
-      roles: ['Admin', 'Juzgado', 'CEMCI', 'CEMS']
+      roles: ['Administrador', 'Juzgado', 'CEMCI', 'CEMS']
     },
     {
       name: 'Procesos',
       icon: Folder,
       path: '/procesos',
-      roles: ['Admin', 'Juzgado', 'CEMCI', 'CEMS']
+      roles: ['Administrador', 'Juzgado', 'CEMCI', 'CEMS']
     },
     {
       name: 'Audiencias',
       icon: Calendar,
       path: '/audiencias',
-      roles: ['Admin', 'Juzgado']
+      roles: ['Administrador', 'Juzgado']
     },
     {
       name: 'Carpetas',
       icon: FileText,
       path: '/carpetas',
-      roles: ['Admin', 'Juzgado', 'CEMCI', 'CEMS'],
+      roles: ['Administrador', 'Juzgado', 'CEMCI', 'CEMS'],
       subItems: [
         { name: 'CJ', path: '/carpetas/cj' },
         { name: 'CJO', path: '/carpetas/cjo' },
@@ -68,7 +68,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       name: 'Medidas',
       icon: Scale,
       path: '/medidas',
-      roles: ['Admin', 'Juzgado'],
+      roles: ['Administrador', 'Juzgado'],
       subItems: [
         { name: 'Cautelares', path: '/medidas/cautelares' },
         { name: 'Sancionadoras', path: '/medidas/sancionadoras' }
@@ -78,19 +78,19 @@ const Sidebar = ({ isOpen, onClose }) => {
       name: 'Catálogos',
       icon: BookOpen,
       path: '/catalogos',
-      roles: ['Admin']
+      roles: ['Administrador']
     },
     {
       name: 'Reportes',
       icon: BarChart3,
       path: '/reportes',
-      roles: ['Admin', 'Juzgado']
+      roles: ['Administrador', 'Juzgado']
     },
     {
       name: 'Configuración',
       icon: Settings,
       path: '/configuracion',
-      roles: ['Admin']
+      roles: ['Administrador']
     }
   ];
 
@@ -115,7 +115,6 @@ const Sidebar = ({ isOpen, onClose }) => {
           fixed top-16 left-0 z-40 w-64 h-[calc(100vh-4rem)] transition-transform
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
           bg-white border-r border-gray-200
-          lg:translate-x-0
         `}
       >
         {/* Menu */}
@@ -184,12 +183,10 @@ const Sidebar = ({ isOpen, onClose }) => {
           </ul>
 
           {/* Footer info */}
-          <div className="mt-8 pt-4 border-t border-gray-200">
-            <div className="px-3 py-2 text-xs text-gray-500">
-              <p className="font-semibold">Usuario actual:</p>
-              <p>{user?.nombre}</p>
-              <p className="text-blue-600">{user?.rol_nombre}</p>
-            </div>
+          <div className="mt-8 pt-4 border-t border-gray-200 px-3 py-2 text-xs text-gray-500">
+            Sistema Tribunal Adolescentes
+            <br />
+            v1.0.0
           </div>
         </div>
       </aside>
