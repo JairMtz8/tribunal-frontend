@@ -78,7 +78,17 @@ const Sidebar = ({ isOpen, onClose }) => {
       name: 'Catálogos',
       icon: BookOpen,
       path: '/catalogos',
-      roles: ['Administrador']
+      roles: ['Administrador'],
+      subItems: [
+        { name: 'Conductas (Delitos)', path: '/catalogos/conductas' },
+        { name: 'Calificativas Delito', path: '/catalogos/calificativas' },
+        { name: 'Estados Procesales', path: '/catalogos/estados-procesales' },
+        { name: 'Estados Procesales', path: '/catalogos/estados-procesales' },
+        { name: 'Tipos Med. Cautelares', path: '/catalogos/tipos-medidas-cautelares' },
+        { name: 'Tipos Med. Sancionadoras', path: '/catalogos/tipos-medidas-sancionadoras' },
+        { name: 'Tipos de Reparación', path: '/catalogos/tipos-reparacion' },
+        { name: 'Roles', path: '/catalogos/roles' }
+      ]
     },
     {
       name: 'Reportes',
@@ -113,7 +123,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       <aside
         className={`
           fixed top-16 left-0 z-40 w-64 h-[calc(100vh-4rem)] transition-transform
-          ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+          lg:translate-x-0
           bg-white border-r border-gray-200
         `}
       >
