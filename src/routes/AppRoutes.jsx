@@ -22,6 +22,12 @@ import EditarAdolescente from '../pages/adolescentes/EditarAdolescente';
 import ListaProcesos from '../pages/procesos/ListaProcesos';
 import DetalleProceso from '../pages/procesos/DetalleProceso';
 
+// CJ
+import ListaCJ from '../pages/cj/ListaCJ';
+import CrearProcesoCJ from '../pages/cj/CrearProcesoCJ';
+import DetalleCJ from '../pages/cj/DetalleCJ';
+import AsignarActoresCJ from '../pages/cj/AsignarActoresCJ';
+
 // Catálogos
 import ListaCatalogo from '../pages/catalogos/ListaCatalogo';
 import FormularioCatalogo from '../pages/catalogos/FormularioCatalogo';
@@ -97,7 +103,13 @@ const AppRoutes = () => {
 
           {/* ========== PROCESOS ========== */}
           <Route path="procesos" element={<ListaProcesos />} />
+          <Route path="procesos/nuevo" element={<CrearProcesoCJ />} />
           <Route path="procesos/:id" element={<DetalleProceso />} />
+
+          {/* ========== CARPETAS CJ ========== */}
+          <Route path="carpetas/cj" element={<ListaCJ />} />
+          <Route path="carpetas/cj/:id/asignar-actores" element={<AsignarActoresCJ />} />
+          <Route path="carpetas/cj/:id" element={<DetalleCJ />} />
 
           {/* ========== CATÁLOGOS ========== */}
           {/* Conductas (Delitos) */}

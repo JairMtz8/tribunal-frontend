@@ -33,11 +33,16 @@ const ListaCJ = () => {
   const loadCarpetas = async () => {
     setIsLoading(true);
     try {
+      // Construir params solo con valores no vacíos
       const params = {
         page: pagination.page,
         limit: pagination.limit,
-        ...filters
       };
+
+      // Solo agregar filtros si tienen valor
+      if (filters.tipo_fuero) params.tipo_fuero = filters.tipo_fuero;
+      if (filters.vinculacion !== '') params.vinculacion = filters.vinculacion;
+      if (filters.reincidente !== '') params.reincidente = filters.reincidente;
 
       const response = await cjService.getAll(params);
       const data = Array.isArray(response) ? response : (response.data || []);
@@ -101,7 +106,7 @@ const ListaCJ = () => {
           <h1 className="text-2xl font-bold text-gray-900">Carpetas CJ</h1>
           <p className="text-gray-600">Carpetas de Investigación</p>
         </div>
-        <Button icon={Plus} onClick={() => navigate('/cj/nuevo')}>
+        <Button icon={Plus} onClick={() => navigate('/procesos/nuevo')}>
           Nueva Carpeta CJ
         </Button>
       </div>
@@ -139,27 +144,6 @@ const ListaCJ = () => {
             ]}
           />
 
-          <Select
-            label="Vinculación"
-            value={filters.vinculacion}
-            onChange={(e) => setFilters(prev => ({ ...prev, vinculacion: e.target.value }))}
-            options={[
-              { value: '', label: 'Todos' },
-              { value: '1', label: 'Vinculados' },
-              { value: '0', label: 'No Vinculados' }
-            ]}
-          />
-
-          <Select
-            label="Reincidentes"
-            value={filters.reincidente}
-            onChange={(e) => setFilters(prev => ({ ...prev, reincidente: e.target.value }))}
-            options={[
-              { value: '', label: 'Todos' },
-              { value: '1', label: 'Reincidentes' },
-              { value: '0', label: 'No Reincidentes' }
-            ]}
-          />
         </div>
       </div>
 
@@ -192,7 +176,7 @@ const ListaCJ = () => {
                     Fuero
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Estado
+                    Observaciones
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
                     Acciones
@@ -215,37 +199,27 @@ const ListaCJ = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 text-xs font-semibold rounded-full ${carpeta.tipo_fuero === 'FEDERAL'
-                          ? 'bg-purple-100 text-purple-800'
-                          : 'bg-blue-100 text-blue-800'
+                        ? 'bg-purple-100 text-purple-800'
+                        : 'bg-blue-100 text-blue-800'
                         }`}>
                         {carpeta.tipo_fuero || 'N/A'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex gap-1">
-                        {carpeta.vinculacion && (
-                          <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                            Vinculado
-                          </span>
-                        )}
-                        {carpeta.reincidente && (
-                          <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-                            Reincidente
-                          </span>
-                        )}
-                      </div>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {carpeta.observaciones || 'N/A'}
                     </td>
+
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end gap-2">
                         <button
-                          onClick={() => navigate(`/cj/${carpeta.id_cj}`)}
+                          onClick={() => navigate(`/carpetas/cj/${carpeta.id_cj}`)}
                           className="text-blue-600 hover:text-blue-900"
                           title="Ver detalle"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => navigate(`/cj/${carpeta.id_cj}/editar`)}
+                          onClick={() => navigate(`/carpetas/cj/${carpeta.id_cj}/editar`)}
                           className="text-green-600 hover:text-green-900"
                           title="Editar"
                         >
