@@ -42,9 +42,6 @@ const ListaAdolescentes = () => {
         paginationData = response.pagination || {};
       }
 
-      console.log('5. Adolescentes extraídos:', adolescentes);
-      console.log('6. Longitud:', adolescentes.length);
-
       setAdolescentes(adolescentes);
       setPagination(prev => ({
         ...prev,

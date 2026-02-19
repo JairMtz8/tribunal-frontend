@@ -70,7 +70,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       path: '/medidas',
       roles: ['Administrador', 'Juzgado'],
       subItems: [
-        { name: 'Cautelares', path: '/medidas/cautelares' },
+        { name: 'Cautelares', path: '/medidas-cautelares' },
         { name: 'Sancionadoras', path: '/medidas/sancionadoras' }
       ]
     },

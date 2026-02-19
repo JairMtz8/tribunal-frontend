@@ -17,7 +17,7 @@ const Select = forwardRef(({
           {props.required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
-      
+
       <select
         ref={ref}
         className={`
@@ -30,7 +30,7 @@ const Select = forwardRef(({
         {...props}
       >
         {placeholder && (
-          <option value="">{placeholder}</option>
+          <option value="" disabled hidden>{placeholder}</option>
         )}
         {options.map((option) => (
           <option key={option.value} value={option.value}>
@@ -38,7 +38,7 @@ const Select = forwardRef(({
           </option>
         ))}
       </select>
-      
+
       {error && (
         <p className="mt-1 text-sm text-red-600">{error}</p>
       )}

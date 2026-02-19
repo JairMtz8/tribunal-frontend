@@ -45,7 +45,7 @@ const ListaCJ = () => {
       if (filters.reincidente !== '') params.reincidente = filters.reincidente;
 
       const response = await cjService.getAll(params);
-      const data = Array.isArray(response) ? response : (response.data || []);
+      const data = response.data || response;
       const paginationData = response.pagination || {};
 
       setCarpetas(data);
@@ -138,12 +138,11 @@ const ListaCJ = () => {
             value={filters.tipo_fuero}
             onChange={(e) => setFilters(prev => ({ ...prev, tipo_fuero: e.target.value }))}
             options={[
-              { value: '', label: 'Todos' },
+              { value: '', label: 'TODOS' },
               { value: 'FEDERAL', label: 'FEDERAL' },
               { value: 'COMUN', label: 'COMÚN' }
             ]}
           />
-
         </div>
       </div>
 
@@ -167,7 +166,7 @@ const ListaCJ = () => {
                     Número CJ
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    AMPEA
+                    Nombre del adolescente
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Fecha Ingreso
@@ -192,7 +191,7 @@ const ListaCJ = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {carpeta.numero_ampea || 'N/A'}
+                      {carpeta.adolescente_nombre || carpeta.adolescente_iniciales || 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {formatDate(carpeta.fecha_ingreso)}
@@ -206,9 +205,8 @@ const ListaCJ = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {carpeta.observaciones || 'N/A'}
+                      {carpeta.observaciones|| 'N/A'}
                     </td>
-
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end gap-2">
                         <button

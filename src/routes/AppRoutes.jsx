@@ -21,11 +21,18 @@ import EditarAdolescente from '../pages/adolescentes/EditarAdolescente';
 // Procesos
 import ListaProcesos from '../pages/procesos/ListaProcesos';
 import DetalleProceso from '../pages/procesos/DetalleProceso';
+import EditarProceso from '../pages/procesos/EditarProceso';
 
 // CJ
 import ListaCJ from '../pages/cj/ListaCJ';
 import CrearProcesoCJ from '../pages/cj/CrearProcesoCJ';
 import DetalleCJ from '../pages/cj/DetalleCJ';
+import EditarCJ from '../pages/cj/EditarCJ';
+
+// Medidas Cautelares
+import ListaMedidasCautelares from '../pages/medidas-cautelares/ListaMedidasCautelares';
+import AplicarMedidaCautelar from '../pages/medidas-cautelares/AplicarMedidaCautelar';
+import VerMedidasCautelares from '../pages/medidas-cautelares/VerMedidasCautelares';
 import AsignarActoresCJ from '../pages/cj/AsignarActoresCJ';
 
 // Catálogos
@@ -104,12 +111,19 @@ const AppRoutes = () => {
           {/* ========== PROCESOS ========== */}
           <Route path="procesos" element={<ListaProcesos />} />
           <Route path="procesos/nuevo" element={<CrearProcesoCJ />} />
+          <Route path="procesos/:id/editar" element={<EditarProceso />} />
           <Route path="procesos/:id" element={<DetalleProceso />} />
 
           {/* ========== CARPETAS CJ ========== */}
           <Route path="carpetas/cj" element={<ListaCJ />} />
           <Route path="carpetas/cj/:id/asignar-actores" element={<AsignarActoresCJ />} />
+          <Route path="carpetas/cj/:id/editar" element={<EditarCJ />} />
           <Route path="carpetas/cj/:id" element={<DetalleCJ />} />
+
+          {/* ========== MEDIDAS CAUTELARES ========== */}
+          <Route path="medidas-cautelares" element={<ListaMedidasCautelares />} />
+          <Route path="medidas-cautelares/:procesoId/aplicar" element={<AplicarMedidaCautelar />} />
+          <Route path="medidas-cautelares/:procesoId/ver" element={<VerMedidasCautelares />} />
 
           {/* ========== CATÁLOGOS ========== */}
           {/* Conductas (Delitos) */}

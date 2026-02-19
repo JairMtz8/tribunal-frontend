@@ -7,7 +7,7 @@ const cjService = {
      */
     getAll: async (params = {}) => {
         const response = await api.get('/cj', { params });
-        return response;
+        return response.data;
     },
 
     /**
@@ -15,7 +15,7 @@ const cjService = {
      */
     getById: async (id) => {
         const response = await api.get(`/cj/${id}`);
-        return response;
+        return response.data;
     },
 
     /**
@@ -23,7 +23,7 @@ const cjService = {
      */
     create: async (data) => {
         const response = await api.post('/cj', data);
-        return response;
+        return response.data;
     },
 
     /**
@@ -31,7 +31,7 @@ const cjService = {
      */
     update: async (id, data) => {
         const response = await api.put(`/cj/${id}`, data);
-        return response;
+        return response.data;
     },
 
     /**
@@ -39,7 +39,7 @@ const cjService = {
      */
     delete: async (id) => {
         const response = await api.delete(`/cj/${id}`);
-        return response;
+        return response.data;
     },
 
     /**
@@ -47,7 +47,7 @@ const cjService = {
      */
     getStats: async () => {
         const response = await api.get('/cj/stats');
-        return response;
+        return response.data;
     }
 };
 
