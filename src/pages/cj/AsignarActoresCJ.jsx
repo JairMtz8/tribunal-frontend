@@ -84,14 +84,14 @@ const AsignarActoresCJ = () => {
       setSearchActor('');
       setSearchResults([]);
     } catch (error) {
-      toast.error('Error al asignar actor');
+      toast.error('Error al asignar parte procesal');
       console.error(error);
     }
   };
 
   const crearYAsignarActor = async () => {
     if (!tipoNuevoActor) {
-      toast.error('Debe seleccionar el tipo de actor');
+      toast.error('Debe seleccionar el tipo de parte procesal');
       return;
     }
 
@@ -124,7 +124,7 @@ const AsignarActoresCJ = () => {
       setTipoNuevoActor('');
       setShowCreateForm(false);
     } catch (error) {
-      toast.error('Error al crear actor');
+      toast.error('Error al crear parte procesal');
       console.error(error);
     }
   };
@@ -132,17 +132,17 @@ const AsignarActoresCJ = () => {
   const desasignarActor = async (actorId) => {
     try {
       await actorService.desasignar(proceso_id, 'CJ', actorId);
-      toast.success('Actor desasignado');
+      toast.success('Parte procesal desasignado');
       setActoresAsignados(actoresAsignados.filter(a => a.id_actor !== actorId));
     } catch (error) {
-      toast.error('Error al desasignar actor');
+      toast.error('Error al desasignar parte procesal');
       console.error(error);
     }
   };
 
   const finalizarYContinuar = () => {
     if (actoresAsignados.length === 0) {
-      if (!window.confirm('No ha asignado ningún actor. ¿Desea continuar sin actores?')) {
+      if (!window.confirm('No ha asignado ningúna parte procesal. ¿Desea continuar?')) {
         return;
       }
     }
@@ -165,7 +165,7 @@ const AsignarActoresCJ = () => {
           {numero_cj} - Carpeta de Investigación Judicial
         </p>
         <p className="text-sm text-gray-500 mt-1">
-          Ahora puede asignar los actores jurídicos a esta carpeta
+          Ahora puede asignar las partes procesales a esta carpeta
         </p>
       </div>
 
@@ -173,7 +173,7 @@ const AsignarActoresCJ = () => {
       <div className="bg-white shadow-lg rounded-lg p-6">
         <div className="flex items-center gap-2 mb-6">
           <User className="w-5 h-5 text-gray-500" />
-          <h2 className="text-lg font-semibold text-gray-900">Asignar Actores Jurídicos</h2>
+          <h2 className="text-lg font-semibold text-gray-900">Asignar partes procesales</h2>
           <span className="ml-auto text-sm text-gray-500">Paso opcional</span>
         </div>
 
@@ -182,7 +182,7 @@ const AsignarActoresCJ = () => {
           <div className="relative">
             <Input
               icon={Search}
-              placeholder="Buscar actor por nombre (mín. 3 caracteres)..."
+              placeholder="Buscar parte procesal por nombre (mín. 3 caracteres)..."
               value={searchActor}
               onChange={handleSearchActor}
             />
@@ -218,12 +218,12 @@ const AsignarActoresCJ = () => {
           {showCreateForm && searchActor.length >= 3 && (
             <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-4">
               <p className="text-sm text-blue-800 mb-3">
-                <strong>No se encontró el actor.</strong> ¿Desea crear "{searchActor}"?
+                <strong>No se encontró la parte procesal.</strong> ¿Desea crear "{searchActor}"?
               </p>
 
               <div className="space-y-3">
                 <Select
-                  label="Tipo de Actor"
+                  label="Tipo de parte procesal"
                   value={tipoNuevoActor}
                   onChange={(e) => setTipoNuevoActor(e.target.value)}
                   options={[
@@ -231,7 +231,6 @@ const AsignarActoresCJ = () => {
                     { value: 'defensa', label: 'Defensa' },
                     { value: 'fiscal', label: 'Fiscal' },
                     { value: 'juez', label: 'Juez' },
-                    { value: 'perito', label: 'Perito' },
                     { value: 'otro', label: 'Otro' }
                   ]}
                 />
@@ -264,13 +263,13 @@ const AsignarActoresCJ = () => {
         {/* Lista de actores asignados */}
         <div>
           <h3 className="text-sm font-medium text-gray-700 mb-3">
-            Actores Asignados ({actoresAsignados.length})
+            Partes procesales Asignadas ({actoresAsignados.length})
           </h3>
 
           {actoresAsignados.length === 0 ? (
             <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
               <User className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-              <p className="text-gray-500 text-sm">No hay actores asignados</p>
+              <p className="text-gray-500 text-sm">No hay partes procesales asignados</p>
               <p className="text-gray-400 text-xs mt-1">Puede asignarlos ahora o después</p>
             </div>
           ) : (
@@ -316,13 +315,13 @@ const AsignarActoresCJ = () => {
           icon={ArrowRight}
           onClick={finalizarYContinuar}
         >
-          {actoresAsignados.length > 0 ? 'Finalizar' : 'Continuar Sin Actores'}
+          {actoresAsignados.length > 0 ? 'Finalizar' : 'Continuar Sin Partes procesales'}
         </Button>
       </div>
 
       {/* Mensaje informativo */}
       <div className="text-center text-sm text-gray-500">
-        💡 Puede agregar o modificar actores en cualquier momento desde la vista de detalle
+        💡 Puede agregar o modificar partes procesales en cualquier momento desde la vista de detalle
       </div>
     </div>
   );

@@ -2,12 +2,13 @@
 // ==================== PARTE 1/4 ====================
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, User, X, FileText, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Edit, User, X, FileText, CheckCircle, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import cjService from '../../services/cjService';
 import cjConductaService from '../../services/cjConductaService';
 import actorService from '../../services/actorService';
+import cjoService from '../../services/cjoService';
 import Button from '../../components/common/Button';
 import InfoField from '../../components/common/InfoField';
 import { formatDate } from '../../utils/formatters';
@@ -19,6 +20,7 @@ const DetalleCJ = () => {
   const [cj, setCJ] = useState(null);
   const [conductas, setConductas] = useState([]);
   const [actoresAsignados, setActoresAsignados] = useState([]);
+  const [cjo, setCjo] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -35,12 +37,24 @@ const DetalleCJ = () => {
       if (cjData.proceso_id) {
         loadActoresAsignados(cjData.proceso_id);
       }
+      // Cargar CJO si existe
+      loadCjo(id);
     } catch (error) {
       toast.error('Error al cargar CJ');
       console.error(error);
       navigate('/carpetas/cj');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadCjo = async (cjId) => {
+    try {
+      const response = await cjoService.getByCjId(cjId);
+      setCjo(response.data || response);
+    } catch (error) {
+      // No hay CJO, no pasa nada
+      setCjo(null);
     }
   };
 
@@ -102,9 +116,20 @@ const DetalleCJ = () => {
             <p className="text-gray-600">Carpeta de Investigación Judicial</p>
           </div>
         </div>
-        <Button icon={Edit} onClick={() => navigate(`/carpetas/cj/${id}/editar`)}>
-          Editar CJ
-        </Button>
+        <div className="flex gap-2">
+          {cjo ? (
+            <Button icon={FileText} onClick={() => navigate(`/carpetas/cjo/${cjo.id_cjo}`)}>
+              Ver CJO
+            </Button>
+          ) : (
+            <Button variant="secondary" icon={Plus} onClick={() => navigate(`/carpetas/cjo/nueva?cj_id=${id}`)}>
+              Crear CJO
+            </Button>
+          )}
+          <Button icon={Edit} onClick={() => navigate(`/carpetas/cj/${id}/editar`)}>
+            Editar CJ
+          </Button>
+        </div>
       </div>
 
       {/* Información General */}
@@ -340,7 +365,7 @@ const DetalleCJ = () => {
       {/* ==================== PARTE 4/4 ==================== */}
 
       {/* Actores Jurídicos */}
-      <AccordionSection title="Actores Jurídicos de la CJ">
+      <AccordionSection title="Actores Jurídicos de la CJ" defaultOpen={true}>
         <div>
           <h3 className="text-sm font-medium text-gray-700 mb-3">
             Actores Asignados ({actoresAsignados.length})

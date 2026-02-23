@@ -1,7 +1,7 @@
 // src/pages/cj/ListaCJ.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Eye, Edit, Trash2 } from 'lucide-react';
+import { Plus, Search, Eye, Edit, Trash2, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import cjService from '../../services/cjService';
@@ -45,7 +45,7 @@ const ListaCJ = () => {
       if (filters.reincidente !== '') params.reincidente = filters.reincidente;
 
       const response = await cjService.getAll(params);
-      const data = response.data || response;
+      const data = Array.isArray(response) ? response : (response.data || []);
       const paginationData = response.pagination || {};
 
       setCarpetas(data);
@@ -138,9 +138,31 @@ const ListaCJ = () => {
             value={filters.tipo_fuero}
             onChange={(e) => setFilters(prev => ({ ...prev, tipo_fuero: e.target.value }))}
             options={[
-              { value: '', label: 'TODOS' },
+              { value: '', label: 'Todos' },
               { value: 'FEDERAL', label: 'FEDERAL' },
               { value: 'COMUN', label: 'COMÚN' }
+            ]}
+          />
+
+          <Select
+            label="Vinculación"
+            value={filters.vinculacion}
+            onChange={(e) => setFilters(prev => ({ ...prev, vinculacion: e.target.value }))}
+            options={[
+              { value: '', label: 'Todos' },
+              { value: '1', label: 'Vinculados' },
+              { value: '0', label: 'No Vinculados' }
+            ]}
+          />
+
+          <Select
+            label="Reincidentes"
+            value={filters.reincidente}
+            onChange={(e) => setFilters(prev => ({ ...prev, reincidente: e.target.value }))}
+            options={[
+              { value: '', label: 'Todos' },
+              { value: '1', label: 'Reincidentes' },
+              { value: '0', label: 'No Reincidentes' }
             ]}
           />
         </div>
@@ -175,7 +197,7 @@ const ListaCJ = () => {
                     Fuero
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Observaciones
+                    CJO
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
                     Acciones
@@ -198,14 +220,22 @@ const ListaCJ = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 text-xs font-semibold rounded-full ${carpeta.tipo_fuero === 'FEDERAL'
-                        ? 'bg-purple-100 text-purple-800'
-                        : 'bg-blue-100 text-blue-800'
+                          ? 'bg-purple-100 text-purple-800'
+                          : 'bg-blue-100 text-blue-800'
                         }`}>
                         {carpeta.tipo_fuero || 'N/A'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {carpeta.observaciones|| 'N/A'}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {carpeta.id_cjo ? (
+                        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                          {carpeta.numero_cjo}
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-600">
+                          Sin CJO
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end gap-2">
@@ -223,6 +253,23 @@ const ListaCJ = () => {
                         >
                           <Edit className="w-4 h-4" />
                         </button>
+                        {carpeta.id_cjo ? (
+                          <button
+                            onClick={() => navigate(`/carpetas/cjo/${carpeta.id_cjo}`)}
+                            className="text-purple-600 hover:text-purple-900"
+                            title="Ver CJO"
+                          >
+                            <FileText className="w-4 h-4" />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => navigate(`/carpetas/cjo/nueva?cj_id=${carpeta.id_cj}`)}
+                            className="text-indigo-600 hover:text-indigo-900"
+                            title="Crear CJO"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
+                        )}
                         <button
                           onClick={() => handleDelete(carpeta.id_cj)}
                           className="text-red-600 hover:text-red-900"

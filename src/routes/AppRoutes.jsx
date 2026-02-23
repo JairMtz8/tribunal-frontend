@@ -29,6 +29,12 @@ import CrearProcesoCJ from '../pages/cj/CrearProcesoCJ';
 import DetalleCJ from '../pages/cj/DetalleCJ';
 import EditarCJ from '../pages/cj/EditarCJ';
 
+// CJO
+import ListaCJO from '../pages/cjo/ListaCJO';
+import CrearCJO from '../pages/cjo/CrearCJO';
+import EditarCJO from '../pages/cjo/EditarCJO';
+import DetalleCJO from '../pages/cjo/DetalleCJO';
+
 // Medidas Cautelares
 import ListaMedidasCautelares from '../pages/medidas-cautelares/ListaMedidasCautelares';
 import AplicarMedidaCautelar from '../pages/medidas-cautelares/AplicarMedidaCautelar';
@@ -119,6 +125,12 @@ const AppRoutes = () => {
           <Route path="carpetas/cj/:id/asignar-actores" element={<AsignarActoresCJ />} />
           <Route path="carpetas/cj/:id/editar" element={<EditarCJ />} />
           <Route path="carpetas/cj/:id" element={<DetalleCJ />} />
+
+          {/* ========== CARPETAS CJO ========== */}
+          <Route path="carpetas/cjo" element={<ListaCJO />} />
+          <Route path="carpetas/cjo/nueva" element={<CrearCJO />} />
+          <Route path="carpetas/cjo/:id/editar" element={<EditarCJO />} />
+          <Route path="carpetas/cjo/:id" element={<DetalleCJO />} />
 
           {/* ========== MEDIDAS CAUTELARES ========== */}
           <Route path="medidas-cautelares" element={<ListaMedidasCautelares />} />

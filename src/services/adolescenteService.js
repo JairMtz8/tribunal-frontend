@@ -37,7 +37,13 @@ const adolescenteService = {
             params: { search: searchTerm }
         });
         return response;
-    }
+    },
+
+    // Obtener adolescentes sin proceso activo
+    getSinProceso: async () => {
+        const response = await api.get('/adolescentes/sin-proceso');
+        return response.data;
+    },
 };
 
 export default adolescenteService;

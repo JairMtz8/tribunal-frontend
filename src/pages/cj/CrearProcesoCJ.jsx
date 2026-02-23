@@ -144,7 +144,7 @@ const CrearProcesoCJ = () => {
   const loadCatalogos = async () => {
     try {
       // Cargar adolescentes
-      const adoResponse = await adolescenteService.getAll();
+      const adoResponse = await adolescenteService.getSinProceso();
       const adoData = Array.isArray(adoResponse) ? adoResponse : (adoResponse.data || []);
       setAdolescentes(adoData);
 
@@ -192,10 +192,16 @@ const CrearProcesoCJ = () => {
 
       const procesoResponse = await procesoService.create(procesoData);
 
+      console.log('📦 Respuesta completa:', procesoResponse);
+
       // La respuesta puede venir en diferentes formatos según el backend
       const responseData = procesoResponse.data || procesoResponse;
-      const proceso_id = responseData.proceso?.id_proceso || responseData.procesoId;
-      const cj_id = responseData.carpetas?.cj?.id_cj || responseData.cjId;
+      console.log('📦 responseData:', responseData);
+
+      const proceso_id = responseData.proceso?.id_proceso || responseData.procesoId || responseData.proceso_id;
+      const cj_id = responseData.carpetas?.cj?.id_cj || responseData.cjId || responseData.cj_id;
+
+      console.log('📦 IDs extraídos:', { proceso_id, cj_id });
 
       // PASO 2: Actualizar CJ con detalles completos
       const cjData = {
@@ -373,6 +379,7 @@ const CrearProcesoCJ = () => {
               error={errors.adolescente_id?.message}
               required
               options={[
+                { value: '', label: 'Seleccione un adolescente' },
                 ...adolescentes.map(ado => ({
                   value: ado.id_adolescente,
                   label: ado.nombre
@@ -437,6 +444,7 @@ const CrearProcesoCJ = () => {
                 error={errors.status_id?.message}
                 required
                 options={[
+                  { value: '', label: 'Seleccione un status' },
                   ...statusList.map(status => ({
                     value: status.id_status,
                     label: status.nombre
@@ -522,6 +530,7 @@ const CrearProcesoCJ = () => {
                           error={errors.conductas?.[index]?.conducta_id?.message}
                           required
                           options={[
+                            { value: '', label: 'Seleccione un delito' },
                             ...conductas.map(cond => ({
                               value: cond.id_conducta,
                               label: cond.nombre
@@ -546,6 +555,7 @@ const CrearProcesoCJ = () => {
                           error={errors.conductas?.[index]?.calificativa_id?.message}
                           required
                           options={[
+                            { value: '', label: 'Seleccione una calificativa' },
                             ...calificativas.map(calif => ({
                               value: calif.id_calificativa,
                               label: calif.nombre
@@ -646,19 +656,20 @@ const CrearProcesoCJ = () => {
                 </div>
 
                 {controlChecked && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-7">
+                  <div className="ml-7">
                     <Input
                       label="Fecha Control"
                       type="date"
                       {...register('fecha_control')}
                     />
-                    <Input
-                      label="Fecha Formulación"
-                      type="date"
-                      {...register('fecha_formulacion')}
-                    />
                   </div>
                 )}
+
+                <Input
+                  label="Fecha Formulación"
+                  type="date"
+                  {...register('fecha_formulacion')}
+                />
 
                 <div className="flex items-center gap-3">
                   <input
@@ -690,7 +701,7 @@ const CrearProcesoCJ = () => {
                 </div>
 
                 {vinculacionChecked && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-7">
+                  <div className="space-y-4 ml-7">
                     <Input
                       label="Fecha Vinculación"
                       type="date"
@@ -701,10 +712,17 @@ const CrearProcesoCJ = () => {
                       placeholder="EJ: MISMAS"
                       {...register('conducta_vinculacion')}
                     />
-                    <Input
-                      label="Declaró"
-                      {...register('declaro')}
-                    />
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        id="declaro"
+                        className="w-4 h-4 text-blue-600 rounded"
+                        {...register('declaro')}
+                      />
+                      <label htmlFor="declaro" className="text-sm font-medium text-gray-700">
+                        Declaró
+                      </label>
+                    </div>
                   </div>
                 )}
               </div>

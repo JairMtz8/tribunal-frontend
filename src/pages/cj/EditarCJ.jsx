@@ -196,7 +196,7 @@ const EditarCJ = () => {
       const actoresCJ = actores.filter(a => a.tipo_carpeta === 'CJ');
       setActoresAsignados(actoresCJ);
     } catch (error) {
-      console.error('Error al cargar actores:', error);
+      console.error('Error al cargar partes procesales:', error);
     }
   };
 
@@ -237,14 +237,14 @@ const EditarCJ = () => {
       setSearchActor('');
       setSearchResults([]);
     } catch (error) {
-      toast.error('Error al asignar actor');
+      toast.error('Error al asignar parte procesal');
       console.error(error);
     }
   };
 
   const crearYAsignarActor = async () => {
     if (!tipoNuevoActor) {
-      toast.error('Debe seleccionar el tipo de actor');
+      toast.error('Debe seleccionar el tipo de parte procesal');
       return;
     }
     try {
@@ -258,27 +258,27 @@ const EditarCJ = () => {
         actor_id: actorId,
         tipo_carpeta: 'CJ'
       });
-      toast.success(`Actor "${searchActor}" creado y asignado`);
+      toast.success(`Parte procesal "${searchActor}" creado y asignado`);
       loadActores(procesoId);
       setSearchActor('');
       setTipoNuevoActor('');
       setShowCreateForm(false);
     } catch (error) {
-      toast.error('Error al crear actor');
+      toast.error('Error al crear parte procesal');
       console.error(error);
     }
   };
 
   const desasignarActor = async (actorId) => {
-    if (!window.confirm('¿Desea desasignar este actor de la carpeta CJ?')) {
+    if (!window.confirm('¿Desea desasignar esta Parte procesal de la carpeta CJ?')) {
       return;
     }
     try {
       await actorService.desasignar(procesoId, 'CJ', actorId);
-      toast.success('Actor desasignado correctamente');
+      toast.success('Parte procesal desasignado correctamente');
       loadActores(procesoId);
     } catch (error) {
-      toast.error('Error al desasignar actor');
+      toast.error('Error al desasignar Parte procesal');
       console.error(error);
     }
   };
@@ -373,7 +373,7 @@ const EditarCJ = () => {
     { id: 0, name: 'Información General' },
     { id: 1, name: 'Conductas' },
     { id: 2, name: 'Detalles CJ' },
-    { id: 3, name: 'Actores Jurídicos' },
+    { id: 3, name: 'Partes procesales' },
   ];
 
   return (
@@ -519,11 +519,11 @@ const EditarCJ = () => {
                   <label htmlFor="control" className="text-sm font-medium text-gray-700">Control</label>
                 </div>
                 {controlChecked && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-7">
+                  <div className="ml-7">
                     <Input label="Fecha Control" type="date" {...register('fecha_control')} />
-                    <Input label="Fecha Formulación" type="date" {...register('fecha_formulacion')} />
                   </div>
                 )}
+                <Input label="Fecha Formulación" type="date" {...register('fecha_formulacion')} />
                 <div className="flex items-center gap-3">
                   <input type="checkbox" id="lesiones" className="w-4 h-4 text-blue-600 rounded" {...register('lesiones')} />
                   <label htmlFor="lesiones" className="text-sm font-medium text-gray-700">Lesiones</label>
@@ -663,13 +663,13 @@ const EditarCJ = () => {
           <div className="bg-white shadow rounded-lg p-6 space-y-6">
             <div className="flex items-center gap-2 mb-6">
               <User className="w-5 h-5 text-gray-500" />
-              <h2 className="text-lg font-semibold text-gray-900">Gestionar Actores Jurídicos</h2>
+              <h2 className="text-lg font-semibold text-gray-900">Gestionar Partes procesales</h2>
             </div>
 
             {/* Buscador / Agregar Actor */}
             <div className="mb-6">
               <div className="relative">
-                <Input icon={Search} placeholder="Buscar actor por nombre (mín. 3 caracteres)..." value={searchActor} onChange={handleSearchActor} />
+                <Input icon={Search} placeholder="Buscar Parte procesal por nombre (mín. 3 caracteres)..." value={searchActor} onChange={handleSearchActor} />
 
                 {searchResults.length > 0 && (
                   <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
@@ -695,16 +695,14 @@ const EditarCJ = () => {
               {showCreateForm && searchActor.length >= 3 && (
                 <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm text-blue-800 mb-3">
-                    <strong>No se encontró el actor.</strong> ¿Desea crear "{searchActor}"?
+                    <strong>No se encontró la parte procesal.</strong> ¿Desea crear "{searchActor}"?
                   </p>
 
                   <div className="space-y-3">
-                    <Select label="Tipo de Actor" value={tipoNuevoActor} onChange={(e) => setTipoNuevoActor(e.target.value)} options={[
-                      { value: '', label: 'Seleccione el tipo...' },
+                    <Select label="Tipo de Parte procesal" value={tipoNuevoActor} onChange={(e) => setTipoNuevoActor(e.target.value)} options={[
                       { value: 'defensa', label: 'Defensa' },
                       { value: 'fiscal', label: 'Fiscal' },
                       { value: 'juez', label: 'Juez' },
-                      { value: 'perito', label: 'Perito' },
                       { value: 'otro', label: 'Otro' }
                     ]} />
 
@@ -728,14 +726,14 @@ const EditarCJ = () => {
             {/* Lista de actores asignados */}
             <div>
               <h3 className="text-sm font-medium text-gray-700 mb-3">
-                Actores Asignados ({actoresAsignados.length})
+                Partes procesales Asignados ({actoresAsignados.length})
               </h3>
 
               {actoresAsignados.length === 0 ? (
                 <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
                   <User className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-500 text-sm">No hay actores asignados</p>
-                  <p className="text-gray-400 text-xs mt-1">Use el buscador arriba para agregar actores</p>
+                  <p className="text-gray-500 text-sm">No hay Partes procesales asignados</p>
+                  <p className="text-gray-400 text-xs mt-1">Use el buscador arriba para agregar Parte procesal</p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -750,7 +748,7 @@ const EditarCJ = () => {
                           <p className="text-sm text-gray-500 capitalize">{actor.tipo}</p>
                         </div>
                       </div>
-                      <button type="button" onClick={() => desasignarActor(actor.id_actor)} className="text-red-600 hover:text-red-800" title="Desasignar actor">
+                      <button type="button" onClick={() => desasignarActor(actor.id_actor)} className="text-red-600 hover:text-red-800" title="Desasignar parte procesal">
                         <X className="w-4 h-4" />
                       </button>
                     </div>
