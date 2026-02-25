@@ -17,16 +17,14 @@ const editarCJOSchema = yup.object().shape({
   numero_cjo: yup.string()
     .required('El número de CJO es requerido')
     .matches(/^CJO-\d+\/\d{4}$/, 'Formato inválido (debe ser: CJO-001/2025)'),
-  fecha_ingreso: yup.date()
-    .required('La fecha de ingreso es requerida')
-    .typeError('Fecha inválida'),
-  fecha_auto_apertura: yup.date().nullable().typeError('Fecha inválida'),
+  fecha_ingreso: yup.string().nullable(),
+  fecha_auto_apertura: yup.string().nullable(),
   sentencia: yup.string().nullable(),
-  fecha_sentencia: yup.date().nullable().typeError('Fecha inválida'),
+  fecha_sentencia: yup.string().nullable(),
   monto_reparacion_dano: yup.number().nullable().typeError('Debe ser un número'),
-  fecha_causo_estado: yup.date().nullable().typeError('Fecha inválida'),
+  fecha_causo_estado: yup.string().nullable(),
   toca_apelacion: yup.string().nullable(),
-  fecha_sentencia_enviada_ejecucion: yup.date().nullable().typeError('Fecha inválida'),
+  fecha_sentencia_enviada_ejecucion: yup.string().nullable(),
   juez_envia: yup.string().nullable(),
   juez_recibe: yup.string().nullable(),
   compurga_totalidad: yup.boolean(),

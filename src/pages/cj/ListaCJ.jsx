@@ -117,7 +117,7 @@ const ListaCJ = () => {
           <div className="flex-1">
             <Input
               icon={Search}
-              placeholder="Buscar por número CJ o AMPEA..."
+              placeholder="Buscar por número CJ o Nombre del adolescente..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}

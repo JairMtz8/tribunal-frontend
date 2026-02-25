@@ -35,6 +35,16 @@ import CrearCJO from '../pages/cjo/CrearCJO';
 import EditarCJO from '../pages/cjo/EditarCJO';
 import DetalleCJO from '../pages/cjo/DetalleCJO';
 
+// CEMCI
+import ListaCEMCI from '../pages/cemci/ListaCEMCI';
+import EditarCEMCI from '../pages/cemci/EditarCEMCI';
+import DetalleCEMCI from '../pages/cemci/DetalleCEMCI';
+
+// CEMS
+import ListaCEMS from '../pages/cems/ListaCEMS';
+import EditarCEMS from '../pages/cems/EditarCEMS';
+import DetalleCEMS from '../pages/cems/DetalleCEMS';
+
 // Medidas Cautelares
 import ListaMedidasCautelares from '../pages/medidas-cautelares/ListaMedidasCautelares';
 import AplicarMedidaCautelar from '../pages/medidas-cautelares/AplicarMedidaCautelar';
@@ -131,6 +141,17 @@ const AppRoutes = () => {
           <Route path="carpetas/cjo/nueva" element={<CrearCJO />} />
           <Route path="carpetas/cjo/:id/editar" element={<EditarCJO />} />
           <Route path="carpetas/cjo/:id" element={<DetalleCJO />} />
+
+          {/* ========== CARPETAS CEMCI ========== */}
+          <Route path="carpetas/cemci" element={<ListaCEMCI />} />
+          <Route path="carpetas/cemci/:id/editar" element={<EditarCEMCI />} />
+          <Route path="carpetas/cemci/:id" element={<DetalleCEMCI />} />
+
+          {/* ========== CARPETAS CEMS ========== */}
+          <Route path="carpetas/cems" element={<ListaCEMS />} />
+          <Route path="carpetas/cems/:id/editar" element={<EditarCEMS />} />
+          <Route path="carpetas/cems/:id" element={<DetalleCEMS />} />
+          <Route path="carpetas/cemci/:id" element={<DetalleCEMCI />} />
 
           {/* ========== MEDIDAS CAUTELARES ========== */}
           <Route path="medidas-cautelares" element={<ListaMedidasCautelares />} />

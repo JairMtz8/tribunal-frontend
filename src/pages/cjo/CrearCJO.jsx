@@ -18,16 +18,14 @@ const crearCJOSchema = yup.object().shape({
   numero_cjo: yup.string()
     .required('El número de CJO es requerido')
     .matches(/^CJO-\d+\/\d{4}$/, 'Formato inválido (debe ser: CJO-001/2025)'),
-  fecha_ingreso: yup.date()
-    .required('La fecha de ingreso es requerida')
-    .typeError('Fecha inválida'),
-  fecha_auto_apertura: yup.date().nullable().typeError('Fecha inválida'),
+  fecha_ingreso: yup.string().nullable(),
+  fecha_auto_apertura: yup.string().nullable(),
   sentencia: yup.string().nullable(),
-  fecha_sentencia: yup.date().nullable().typeError('Fecha inválida'),
+  fecha_sentencia: yup.string().nullable(),
   monto_reparacion_dano: yup.number().nullable().typeError('Debe ser un número'),
-  fecha_causo_estado: yup.date().nullable().typeError('Fecha inválida'),
+  fecha_causo_estado: yup.string().nullable(),
   toca_apelacion: yup.string().nullable(),
-  fecha_sentencia_enviada_ejecucion: yup.date().nullable().typeError('Fecha inválida'),
+  fecha_sentencia_enviada_ejecucion: yup.string().nullable(),
   juez_envia: yup.string().nullable(),
   juez_recibe: yup.string().nullable(),
   compurga_totalidad: yup.boolean(),
@@ -126,8 +124,19 @@ const CrearCJO = () => {
         toast.success('CJO creada exitosamente');
       }
 
-      const cjoId = response.data?.cjo?.id_cjo || response.cjo_id;
-      navigate(`/carpetas/cjo/${cjoId}`);
+      // Intentar obtener el ID de diferentes ubicaciones posibles
+      const cjoId = response.data?.cjo?.id_cjo ||
+        response.data?.id_cjo ||
+        response.cjo?.id_cjo ||
+        response.id_cjo;
+
+      if (cjoId) {
+        navigate(`/carpetas/cjo/${cjoId}`);
+      } else {
+        console.error('❌ No se pudo obtener el ID de la CJO creada');
+        toast.error('CJO creada pero no se pudo obtener el ID para redirigir');
+        navigate('/carpetas/cjo');
+      }
     } catch (error) {
       console.error('Error:', error);
       toast.error(error.response?.data?.message || 'Error al crear CJO');

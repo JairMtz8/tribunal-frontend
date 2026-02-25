@@ -24,6 +24,7 @@ const DetalleProceso = () => {
       const response = await procesoService.getById(id);
       console.log('📦 Response completo:', response);
 
+      // La estructura es: response.data.proceso y response.data.carpetas
       const { proceso: procesoData, carpetas } = response.data || response;
 
       // Combinar proceso con sus carpetas
@@ -137,6 +138,10 @@ const DetalleProceso = () => {
               {proceso.status_nombre || 'N/A'}
             </span>
           </div>
+          <div>
+            <p className="text-sm text-gray-500">Fecha de Creación</p>
+            <p className="font-medium text-gray-900">{formatDate(proceso.created_at)}</p>
+          </div>
           <div className="md:col-span-2">
             <p className="text-sm text-gray-500">Observaciones</p>
             <p className="font-medium text-gray-900">{proceso.observaciones || 'Sin observaciones'}</p>
@@ -179,9 +184,37 @@ const DetalleProceso = () => {
               </Button>
             </div>
           )}
+
+          {/* CEMCI */}
+          {proceso.cemci && (
+            <div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold text-gray-500 uppercase">CEMCI</span>
+                <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">Medida Cautelar</span>
+              </div>
+              <p className="font-semibold text-gray-900 mb-3">{proceso.cemci.numero_cemci}</p>
+              <Button size="sm" variant="outline" className="w-full" onClick={() => navigate(`/carpetas/cemci/${proceso.cemci.id_cemci}`)}>
+                Ver CEMCI
+              </Button>
+            </div>
+          )}
+
+          {/* CEMS */}
+          {proceso.cems && (
+            <div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold text-gray-500 uppercase">CEMS</span>
+                <span className="px-2 py-1 text-xs bg-orange-100 text-orange-800 rounded">Ejecución Sanción</span>
+              </div>
+              <p className="font-semibold text-gray-900 mb-3">{proceso.cems.numero_cems}</p>
+              <Button size="sm" variant="outline" className="w-full" onClick={() => navigate(`/carpetas/cems/${proceso.cems.id_cems}`)}>
+                Ver CEMS
+              </Button>
+            </div>
+          )}
         </div>
 
-        {!proceso.cj && !proceso.cjo && (
+        {!proceso.cj && !proceso.cjo && !proceso.cemci && !proceso.cems && (
           <p className="text-gray-500 text-center py-8">No hay carpetas asociadas a este proceso</p>
         )}
       </div>
