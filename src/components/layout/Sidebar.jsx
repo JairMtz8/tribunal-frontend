@@ -83,7 +83,6 @@ const Sidebar = ({ isOpen, onClose }) => {
         { name: 'Conductas (Delitos)', path: '/catalogos/conductas' },
         { name: 'Calificativas Delito', path: '/catalogos/calificativas' },
         { name: 'Estados Procesales', path: '/catalogos/estados-procesales' },
-        { name: 'Estados Procesales', path: '/catalogos/estados-procesales' },
         { name: 'Tipos Med. Cautelares', path: '/catalogos/tipos-medidas-cautelares' },
         { name: 'Tipos Med. Sancionadoras', path: '/catalogos/tipos-medidas-sancionadoras' },
         { name: 'Tipos de Reparación', path: '/catalogos/tipos-reparacion' },

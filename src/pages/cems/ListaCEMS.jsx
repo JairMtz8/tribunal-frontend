@@ -24,6 +24,8 @@ const ListaCEMS = () => {
     try {
       const response = await cemsService.getAll();
       const data = Array.isArray(response) ? response : (response.data || []);
+      console.log('📦 DEBUG - Carpetas CEMS cargadas:', data);
+      console.log('📦 DEBUG - Primera carpeta:', data[0]);
       setCarpetas(data);
     } catch (error) {
       toast.error('Error al cargar carpetas CEMS');
@@ -189,6 +191,24 @@ const ListaCEMS = () => {
                       >
                         <Edit className="w-4 h-4" />
                       </button>
+                      {/* Botón condicional de medida sancionadora */}
+                      {carpeta.total_medidas > 0 ? (
+                        <button
+                          onClick={() => navigate(`/medidas-sancionadoras/proceso/${carpeta.proceso_id}`)}
+                          className="text-purple-600 hover:text-purple-900"
+                          title={`Ver ${carpeta.total_medidas} medida${carpeta.total_medidas > 1 ? 's' : ''}`}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => navigate(`/medidas-sancionadoras/nueva?proceso_id=${carpeta.proceso_id}&cems_id=${carpeta.id_cems}`)}
+                          className="text-purple-600 hover:text-purple-900"
+                          title="Aplicar Medida Sancionadora"
+                        >
+                          <Scale className="w-4 h-4" />
+                        </button>
+                      )}
                       <button
                         onClick={() => handleDelete(carpeta.id_cems)}
                         className="text-red-600 hover:text-red-900"

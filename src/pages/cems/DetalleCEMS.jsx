@@ -1,7 +1,7 @@
 // src/pages/cems/DetalleCEMS.jsx
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, FileText, Scale, ChevronDown, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Edit, FileText, Scale, ChevronDown, ChevronRight, Eye } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import cemsService from '../../services/cemsService';
@@ -109,6 +109,24 @@ const DetalleCEMS = () => {
               onClick={() => navigate(`/carpetas/cemci/${cems.cemci_id}`)}
             >
               Ver CEMCI
+            </Button>
+          )}
+          {/* Botón condicional de medida sancionadora */}
+          {cems.total_medidas > 0 ? (
+            <Button
+              variant="primary"
+              icon={Eye}
+              onClick={() => navigate(`/medidas-sancionadoras/proceso/${cems.proceso_id}`)}
+            >
+              Ver Medidas Sancionadoras ({cems.total_medidas})
+            </Button>
+          ) : (
+            <Button
+              variant="primary"
+              icon={Scale}
+              onClick={() => navigate(`/medidas-sancionadoras/nueva?proceso_id=${cems.proceso_id}&cems_id=${id}`)}
+            >
+              Aplicar Medida Sancionadora
             </Button>
           )}
           <Button icon={Edit} onClick={() => navigate(`/carpetas/cems/${id}/editar`)}>
@@ -335,7 +353,7 @@ const DetalleCEMS = () => {
           <div>
             <h3 className="text-sm font-medium text-blue-800 mb-1">Carpeta auto-creada</h3>
             <p className="text-sm text-blue-700">
-              Esta CEMS fue creada automáticamente cuando la CJO {cems.numero_cjo} tuvo sentencia
+              Esta CEMS fue creada automáticamente cuando la {cems.numero_cjo} tuvo sentencia
               CONDENATORIA o MIXTA.
             </p>
           </div>

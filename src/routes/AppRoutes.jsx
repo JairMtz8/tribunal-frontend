@@ -45,6 +45,13 @@ import ListaCEMS from '../pages/cems/ListaCEMS';
 import EditarCEMS from '../pages/cems/EditarCEMS';
 import DetalleCEMS from '../pages/cems/DetalleCEMS';
 
+// Medidas Sancionadoras
+import ListaMedidasSancionadoras from '../pages/medidas-sancionadoras/ListaMedidasSancionadoras';
+import CrearMedidaSancionadora from '../pages/medidas-sancionadoras/CrearMedidaSancionadora';
+import EditarMedidaSancionadora from '../pages/medidas-sancionadoras/EditarMedidaSancionadora';
+import DetalleMedidaSancionadora from '../pages/medidas-sancionadoras/DetalleMedidaSancionadora';
+import DetalleMedidasProceso from '../pages/medidas-sancionadoras/DetalleMedidasProceso';
+
 // Medidas Cautelares
 import ListaMedidasCautelares from '../pages/medidas-cautelares/ListaMedidasCautelares';
 import AplicarMedidaCautelar from '../pages/medidas-cautelares/AplicarMedidaCautelar';
@@ -151,7 +158,13 @@ const AppRoutes = () => {
           <Route path="carpetas/cems" element={<ListaCEMS />} />
           <Route path="carpetas/cems/:id/editar" element={<EditarCEMS />} />
           <Route path="carpetas/cems/:id" element={<DetalleCEMS />} />
-          <Route path="carpetas/cemci/:id" element={<DetalleCEMCI />} />
+
+          {/* ========== MEDIDAS SANCIONADORAS ========== */}
+          <Route path="medidas-sancionadoras" element={<ListaMedidasSancionadoras />} />
+          <Route path="medidas-sancionadoras/nueva" element={<CrearMedidaSancionadora />} />
+          <Route path="medidas-sancionadoras/proceso/:proceso_id" element={<DetalleMedidasProceso />} />
+          <Route path="medidas-sancionadoras/:id/editar" element={<EditarMedidaSancionadora />} />
+          <Route path="medidas-sancionadoras/:id" element={<DetalleMedidaSancionadora />} />
 
           {/* ========== MEDIDAS CAUTELARES ========== */}
           <Route path="medidas-cautelares" element={<ListaMedidasCautelares />} />
