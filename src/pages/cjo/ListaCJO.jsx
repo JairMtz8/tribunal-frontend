@@ -20,9 +20,16 @@ const ListaCJO = () => {
     sentencia: ''
   });
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    total: 0,
+    totalPages: 1,
+    limit: 10
+  });
+
   useEffect(() => {
     loadCarpetas();
-  }, [filters]);
+  }, [filters, currentPage]);
 
   const loadCarpetas = async () => {
     setIsLoading(true);
@@ -32,9 +39,13 @@ const ListaCJO = () => {
       if (filters.fuero) params.fuero = filters.fuero;
       if (filters.sentencia) params.sentencia = filters.sentencia;
 
+      params.page = currentPage;
+      params.limit = 10;
+
       const response = await cjoService.getAll(params);
-      const data = Array.isArray(response) ? response : (response.data || []);
-      setCarpetas(data);
+
+      setCarpetas(response.data || []);
+      setPagination(response.pagination || { total: 0, totalPages: 1, limit: 10 });
     } catch (error) {
       toast.error('Error al cargar carpetas CJO');
       console.error(error);
@@ -200,8 +211,8 @@ const ListaCJO = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 text-xs font-semibold rounded-full ${carpeta.fuero === 'FEDERAL'
-                        ? 'bg-purple-100 text-purple-800'
-                        : 'bg-blue-100 text-blue-800'
+                      ? 'bg-purple-100 text-purple-800'
+                      : 'bg-blue-100 text-blue-800'
                       }`}>
                       {carpeta.fuero || 'N/A'}
                     </span>
@@ -209,10 +220,10 @@ const ListaCJO = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     {carpeta.sentencia ? (
                       <span className={`px-2 py-1 text-xs font-semibold rounded-full ${carpeta.sentencia.toLowerCase().includes('condenatori')
-                          ? 'bg-red-100 text-red-800'
-                          : carpeta.sentencia.toLowerCase().includes('absolutori')
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-yellow-100 text-yellow-800'
+                        ? 'bg-red-100 text-red-800'
+                        : carpeta.sentencia.toLowerCase().includes('absolutori')
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-yellow-100 text-yellow-800'
                         }`}>
                         {carpeta.sentencia}
                       </span>
@@ -253,6 +264,29 @@ const ListaCJO = () => {
             </tbody>
           </table>
         )}
+        <div className="flex justify-between items-center p-4 border-t">
+          <div className="text-sm text-gray-600">
+            Página {pagination.page} de {pagination.totalPages}
+          </div>
+
+          <div className="flex gap-2">
+            <Button
+              variant="secondary"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(prev => prev - 1)}
+            >
+              Anterior
+            </Button>
+
+            <Button
+              variant="secondary"
+              disabled={currentPage === pagination.totalPages}
+              onClick={() => setCurrentPage(prev => prev + 1)}
+            >
+              Siguiente
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );

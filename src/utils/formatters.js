@@ -4,25 +4,56 @@ import { es } from 'date-fns/locale';
 
 /**
  * Formatear fecha en formato DD/MM/YYYY
+ * IMPORTANTE: Maneja correctamente fechas sin desfase de zona horaria
  */
 export const formatDate = (date) => {
     if (!date) return 'N/A';
+
     try {
-        const parsedDate = typeof date === 'string' ? parseISO(date) : date;
+        let parsedDate;
+
+        if (typeof date === 'string') {
+            // Siempre extraer la parte de la fecha para evitar desfase UTC
+            const datePart = date.split('T')[0];
+            const [year, month, day] = datePart.split('-').map(Number);
+            parsedDate = new Date(year, month - 1, day);
+        } else {
+            parsedDate = date;
+        }
+
+        if (isNaN(parsedDate)) return 'Fecha inválida';
+
         return format(parsedDate, 'dd/MM/yyyy', { locale: es });
     } catch (error) {
+        console.error('Error formateando fecha:', error);
         return 'Fecha inválida';
     }
 };
 
 /**
  * Formatear fecha y hora
+ * IMPORTANTE: Para datetime-local del backend que incluye T
  */
-export const formatDateTime = (date) => {
-    if (!date) return 'N/A';
+export const formatDateTime = (fecha) => {
+    if (!fecha) return 'N/A';
+
     try {
-        const parsedDate = typeof date === 'string' ? parseISO(date) : date;
-        return format(parsedDate, 'dd/MM/yyyy HH:mm', { locale: es });
+        // Eliminar zona horaria si existe
+        const datePart = fecha.split('T')[0];
+        const timePart = fecha.split('T')[1]?.split('.')[0] || '00:00:00';
+
+        const [year, month, day] = datePart.split('-').map(Number);
+        const [hour, minute] = timePart.split(':').map(Number);
+
+        const localDate = new Date(year, month - 1, day, hour || 0, minute || 0);
+
+        return localDate.toLocaleString('es-MX', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     } catch (error) {
         return 'Fecha inválida';
     }
@@ -43,11 +74,20 @@ export const formatRelativeDate = (date) => {
 
 /**
  * Calcular edad a partir de fecha de nacimiento
+ * IMPORTANTE: Maneja correctamente fechas sin desfase de zona horaria
  */
 export const calculateAge = (birthDate) => {
     if (!birthDate) return 'N/A';
     try {
-        const birth = typeof birthDate === 'string' ? parseISO(birthDate) : birthDate;
+        let birth;
+        if (typeof birthDate === 'string') {
+            const datePart = birthDate.split('T')[0];
+            const [year, month, day] = datePart.split('-').map(Number);
+            birth = new Date(year, month - 1, day);
+        } else {
+            birth = birthDate;
+        }
+
         const today = new Date();
         let age = today.getFullYear() - birth.getFullYear();
         const monthDiff = today.getMonth() - birth.getMonth();
@@ -58,6 +98,7 @@ export const calculateAge = (birthDate) => {
 
         return age;
     } catch (error) {
+        console.error('Error calculando edad:', error);
         return 'N/A';
     }
 };

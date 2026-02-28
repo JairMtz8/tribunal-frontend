@@ -42,15 +42,19 @@ const VerMedidasCautelares = () => {
     }
   };
 
-  const handleEliminar = async (medidaId) => {
-    if (!confirm('¿Está seguro de eliminar esta medida cautelar? Esta acción no se puede deshacer.')) return;
+  const handleRevocar = async (medidaId) => {
+    if (!confirm('¿Está seguro de revocar/terminar esta medida cautelar?')) return;
 
     try {
-      await medidaCautelarService.delete(medidaId);
-      toast.success('Medida cautelar eliminada');
+      // Actualizar la medida para marcarla como revocada
+      await medidaCautelarService.update(medidaId, {
+        revocacion_medida: true,
+        fecha_revocacion_medida: new Date().toISOString().split('T')[0] // Fecha actual
+      });
+      toast.success('Medida cautelar revocada correctamente');
       loadData();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Error al eliminar medida');
+      toast.error(error.response?.data?.message || 'Error al revocar medida');
       console.error(error);
     }
   };
@@ -101,63 +105,66 @@ const VerMedidasCautelares = () => {
           <div className="divide-y divide-gray-200">
             {medidas.map((medida) => (
               <div key={medida.id_medida_cautelar} className="p-6 hover:bg-gray-50">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-3">
-                      <Shield className="w-5 h-5 text-blue-600" />
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {medida.tipo_medida_nombre || 'Medida Cautelar'}
-                      </h3>
-                      {medida.revocacion_medida ? (
-                        <span className="px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
-                          TERMINADA
-                        </span>
-                      ) : (
-                        <span className="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                          VIGENTE
-                        </span>
-                      )}
-                      {medida.genera_cemci === 1 && (
-                        <span className="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                          GENERA CEMCI
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-gray-500">Fecha de Imposición</p>
-                        <p className="font-medium text-gray-900">
-                          {formatDate(medida.fecha_medida_cautelar)}
-                        </p>
-                      </div>
-
-                      {medida.fecha_revocacion_medida && (
-                        <div>
-                          <p className="text-sm text-gray-500">Fecha de Término</p>
-                          <p className="font-medium text-gray-900">
-                            {formatDate(medida.fecha_revocacion_medida)}
-                          </p>
-                        </div>
-                      )}
-
-                      {medida.observaciones && (
-                        <div className="md:col-span-2">
-                          <p className="text-sm text-gray-500">Observaciones</p>
-                          <p className="font-medium text-gray-900">{medida.observaciones}</p>
-                        </div>
-                      )}
-                    </div>
+                {/* Header con título y botón */}
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <Shield className="w-5 h-5 text-blue-600" />
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {medida.tipo_medida_nombre || 'Medida Cautelar'}
+                    </h3>
+                    {medida.revocacion_medida ? (
+                      <span className="px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                        TERMINADA
+                      </span>
+                    ) : (
+                      <span className="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                        VIGENTE
+                      </span>
+                    )}
+                    {medida.genera_cemci === 1 && (
+                      <span className="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                        GENERA CEMCI
+                      </span>
+                    )}
                   </div>
 
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    icon={XCircle}
-                    onClick={() => handleEliminar(medida.id_medida_cautelar)}
-                  >
-                    Eliminar
-                  </Button>
+                  {/* Botón de revocar - solo si está vigente */}
+                  {!medida.revocacion_medida && (
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      icon={XCircle}
+                      onClick={() => handleRevocar(medida.id_medida_cautelar)}
+                    >
+                      Revocar
+                    </Button>
+                  )}
+                </div>
+
+                {/* Detalles de la medida */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-500">Fecha de Imposición</p>
+                    <p className="font-medium text-gray-900">
+                      {formatDate(medida.fecha_medida_cautelar)}
+                    </p>
+                  </div>
+
+                  {medida.fecha_revocacion_medida && (
+                    <div>
+                      <p className="text-sm text-gray-500">Fecha de Término</p>
+                      <p className="font-medium text-gray-900">
+                        {formatDate(medida.fecha_revocacion_medida)}
+                      </p>
+                    </div>
+                  )}
+
+                  {medida.observaciones && (
+                    <div className="md:col-span-2">
+                      <p className="text-sm text-gray-500">Observaciones</p>
+                      <p className="font-medium text-gray-900">{medida.observaciones}</p>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

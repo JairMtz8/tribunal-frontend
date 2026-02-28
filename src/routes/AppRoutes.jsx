@@ -52,6 +52,13 @@ import EditarMedidaSancionadora from '../pages/medidas-sancionadoras/EditarMedid
 import DetalleMedidaSancionadora from '../pages/medidas-sancionadoras/DetalleMedidaSancionadora';
 import DetalleMedidasProceso from '../pages/medidas-sancionadoras/DetalleMedidasProceso';
 
+// Audiencias
+import ListaAudiencias from '../pages/audiencias/ListaAudiencias';
+import CrearAudiencia from '../pages/audiencias/CrearAudiencia';
+import EditarAudiencia from '../pages/audiencias/EditarAudiencia';
+import DetalleAudiencia from '../pages/audiencias/DetalleAudiencia';
+import DetalleAudienciasProceso from '../pages/audiencias/DetalleAudienciasProceso';
+
 // Medidas Cautelares
 import ListaMedidasCautelares from '../pages/medidas-cautelares/ListaMedidasCautelares';
 import AplicarMedidaCautelar from '../pages/medidas-cautelares/AplicarMedidaCautelar';
@@ -165,6 +172,13 @@ const AppRoutes = () => {
           <Route path="medidas-sancionadoras/proceso/:proceso_id" element={<DetalleMedidasProceso />} />
           <Route path="medidas-sancionadoras/:id/editar" element={<EditarMedidaSancionadora />} />
           <Route path="medidas-sancionadoras/:id" element={<DetalleMedidaSancionadora />} />
+
+          {/* ========== AUDIENCIAS ========== */}
+          <Route path="audiencias" element={<ListaAudiencias />} />
+          <Route path="audiencias/nueva" element={<CrearAudiencia />} />
+          <Route path="audiencias/proceso/:proceso_id" element={<DetalleAudienciasProceso />} />
+          <Route path="audiencias/:id/editar" element={<EditarAudiencia />} />
+          <Route path="audiencias/:id" element={<DetalleAudiencia />} />
 
           {/* ========== MEDIDAS CAUTELARES ========== */}
           <Route path="medidas-cautelares" element={<ListaMedidasCautelares />} />

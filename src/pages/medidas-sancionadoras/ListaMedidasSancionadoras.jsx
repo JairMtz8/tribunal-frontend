@@ -33,22 +33,42 @@ const ListaMedidasSancionadoras = () => {
 
       const data = Array.isArray(response) ? response : (response.data || []);
 
-      // ✅ Agrupar por proceso - mostrar solo la primera medida de cada proceso
       const medidasAgrupadas = [];
       const procesosVistos = new Set();
 
       data.forEach(medida => {
-        if (!procesosVistos.has(medida.id_proceso || medida.proceso_id)) {
-          procesosVistos.add(medida.id_proceso || medida.proceso_id);
-          // Contar cuántas medidas tiene este proceso y obtener sus tipos
-          const medidasDelProceso = data.filter(m =>
-            (m.id_proceso || m.proceso_id) === (medida.id_proceso || medida.proceso_id)
+        const procesoId = medida.id_proceso || medida.proceso_id;
+
+        if (!procesosVistos.has(procesoId)) {
+          procesosVistos.add(procesoId);
+
+          const medidasDelProceso = data.filter(
+            m => (m.id_proceso || m.proceso_id) === procesoId
           );
-          const tiposMedidas = medidasDelProceso.map(m => m.tipo_nombre);
+
+          // Filtrar según el tipo activo
+          const candidatos = medidasDelProceso.filter(m => {
+            if (filtro === 'privativas') return m.es_privativa;
+            if (filtro === 'no-privativas') return !m.es_privativa;
+            return true;
+          });
+
+          // Si no hay candidatos (caso extremo), usar todas
+          const medidasBase = candidatos.length > 0 ? candidatos : medidasDelProceso;
+
+          // Tipos según filtro
+          const tiposMedidas = medidasBase.map(m => m.tipo_nombre);
+
+          // Medida de mayor duración
+          const medidaMayor = medidasBase.reduce((max, m) => {
+            const diasM = (m.plazo_anios * 365) + (m.plazo_meses * 30) + m.plazo_dias;
+            const diasMax = (max.plazo_anios * 365) + (max.plazo_meses * 30) + max.plazo_dias;
+            return diasM > diasMax ? m : max;
+          });
 
           medidasAgrupadas.push({
-            ...medida,
-            total_medidas_proceso: medidasDelProceso.length,
+            ...medidaMayor,
+            total_medidas_proceso: medidasBase.length,
             tipos_medidas: tiposMedidas
           });
         }

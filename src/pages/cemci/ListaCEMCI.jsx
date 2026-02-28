@@ -22,10 +22,15 @@ const ListaCEMCI = () => {
     concluido: ''
   });
 
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 10;
+
   useEffect(() => {
     loadEstadosProcesales();
     loadCarpetas();
-  }, [filters]);
+  }, [filters, page]);
+
 
   const loadEstadosProcesales = async () => {
     try {
@@ -40,14 +45,26 @@ const ListaCEMCI = () => {
   const loadCarpetas = async () => {
     setIsLoading(true);
     try {
-      const params = {};
+      const params = {
+        page,
+        limit
+      };
 
-      if (filters.estado_procesal_id) params.estado_procesal_id = filters.estado_procesal_id;
-      if (filters.concluido !== '') params.concluido = filters.concluido;
+      if (filters.estado_procesal_id)
+        params.estado_procesal_id = Number(filters.estado_procesal_id);
+
+      if (filters.concluido !== '')
+        params.concluido = filters.concluido;
+
+      if (searchTerm)
+        params.search = searchTerm;
 
       const response = await cemciService.getAll(params);
-      const data = Array.isArray(response) ? response : (response.data || []);
+
+      const data = response.data || [];
       setCarpetas(data);
+      setTotalPages(response.totalPages || 1);
+
     } catch (error) {
       toast.error('Error al cargar carpetas CEMCI');
       console.error(error);
@@ -147,17 +164,6 @@ const ListaCEMCI = () => {
                 value: ep.id_estado,
                 label: ep.nombre
               }))
-            ]}
-          />
-
-          <Select
-            label="Estado"
-            value={filters.concluido}
-            onChange={(e) => setFilters(prev => ({ ...prev, concluido: e.target.value }))}
-            options={[
-              { value: '', label: 'Todos' },
-              { value: '1', label: 'Concluidos' },
-              { value: '0', label: 'Activos' }
             ]}
           />
 
@@ -292,6 +298,27 @@ const ListaCEMCI = () => {
             </tbody>
           </table>
         )}
+        <div className="flex justify-between items-center px-6 py-4 border-t bg-gray-50">
+          <button
+            onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+            disabled={page === 1}
+            className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+          >
+            Anterior
+          </button>
+
+          <span className="text-sm text-gray-600">
+            Página {page} de {totalPages}
+          </span>
+
+          <button
+            onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={page === totalPages}
+            className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+          >
+            Siguiente
+          </button>
+        </div>
       </div>
     </div>
   );

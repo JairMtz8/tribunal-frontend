@@ -69,9 +69,10 @@ const DetalleMedidasProceso = () => {
     );
   }
 
-  const plazoTotalGeneral = medidas.reduce((acc, m) => 
-    acc + calcularPlazoTotal(m.plazo_anios, m.plazo_meses, m.plazo_dias), 0
-  );
+  const plazoTotalGeneral = medidas.reduce((max, m) => {
+    const dias = calcularPlazoTotal(m.plazo_anios, m.plazo_meses, m.plazo_dias);
+    return dias > max.dias ? { dias, medida: m } : max;
+  }, { dias: 0, medida: null });
 
   return (
     <div className="space-y-6">
@@ -86,8 +87,8 @@ const DetalleMedidasProceso = () => {
             <p className="text-gray-600">{medidas.length} medida{medidas.length !== 1 ? 's' : ''} aplicada{medidas.length !== 1 ? 's' : ''}</p>
           </div>
         </div>
-        <Button 
-          icon={Plus} 
+        <Button
+          icon={Plus}
           onClick={() => navigate(`/medidas-sancionadoras/nueva?proceso_id=${proceso_id}`)}
         >
           Añadir Otra Medida
@@ -99,8 +100,13 @@ const DetalleMedidasProceso = () => {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-medium text-blue-800 mb-1">Plazo Total Acumulado</h3>
-              <p className="text-2xl font-bold text-blue-900">{plazoTotalGeneral} días</p>
+              <h3 className="text-sm font-medium text-blue-800 mb-1">Plazo Efectivo (cumplimiento simultáneo)</h3>
+              <p className="text-2xl font-bold text-blue-900">{plazoTotalGeneral.dias} días</p>
+              {plazoTotalGeneral.medida && (
+                <p className="text-sm text-blue-700 mt-1">
+                  {formatearPlazo(plazoTotalGeneral.medida.plazo_anios, plazoTotalGeneral.medida.plazo_meses, plazoTotalGeneral.medida.plazo_dias)}
+                </p>
+              )}
             </div>
             <div className="text-right">
               <p className="text-sm text-blue-700">Total de medidas</p>
@@ -118,8 +124,8 @@ const DetalleMedidasProceso = () => {
           <p className="text-sm text-gray-400 mb-4">
             Este proceso aún no tiene medidas aplicadas
           </p>
-          <Button 
-            icon={Plus} 
+          <Button
+            icon={Plus}
             onClick={() => navigate(`/medidas-sancionadoras/nueva?proceso_id=${proceso_id}`)}
           >
             Aplicar Primera Medida
@@ -129,7 +135,7 @@ const DetalleMedidasProceso = () => {
         <div className="space-y-4">
           {medidas.map((medida, index) => {
             const plazoTotal = calcularPlazoTotal(medida.plazo_anios, medida.plazo_meses, medida.plazo_dias);
-            
+
             return (
               <div key={medida.id_medida} className="bg-white shadow rounded-lg p-6">
                 <div className="flex items-start justify-between mb-4">
@@ -195,7 +201,7 @@ const DetalleMedidasProceso = () => {
           <div>
             <h3 className="text-sm font-medium text-gray-800 mb-1">Sobre las medidas sancionadoras</h3>
             <p className="text-sm text-gray-600">
-              Un proceso puede tener múltiples medidas sancionadoras. El plazo total se calcula como la suma de todas las medidas aplicadas.
+              Un proceso puede tener múltiples medidas sancionadoras. Al cumplirse de manera simultánea, el plazo efectivo corresponde al de la medida de mayor duración.
             </p>
           </div>
         </div>

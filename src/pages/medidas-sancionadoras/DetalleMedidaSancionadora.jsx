@@ -83,13 +83,6 @@ const DetalleMedidaSancionadora = () => {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="secondary"
-            icon={Plus}
-            onClick={() => navigate(`/medidas-sancionadoras/nueva?proceso_id=${medida.proceso_id || medida.id_proceso}`)}
-          >
-            Añadir Otra Medida
-          </Button>
           <Button icon={Edit} onClick={() => navigate(`/medidas-sancionadoras/${id}/editar`)}>
             Editar Medida
           </Button>

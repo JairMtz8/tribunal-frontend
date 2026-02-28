@@ -15,21 +15,29 @@ const ListaCEMS = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 10;
+
   useEffect(() => {
     loadCarpetas();
   }, []);
 
-  const loadCarpetas = async () => {
+  const loadCarpetas = async (page = 1) => {
     setIsLoading(true);
     try {
-      const response = await cemsService.getAll();
-      const data = Array.isArray(response) ? response : (response.data || []);
-      console.log('📦 DEBUG - Carpetas CEMS cargadas:', data);
-      console.log('📦 DEBUG - Primera carpeta:', data[0]);
-      setCarpetas(data);
+      const response = await cemsService.getAll({
+        page,
+        limit,
+        search: searchTerm
+      });
+
+      setCarpetas(response.data || []);
+      setTotalPages(response.totalPages || 1);
+      setCurrentPage(page);
+
     } catch (error) {
       toast.error('Error al cargar carpetas CEMS');
-      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -223,6 +231,27 @@ const ListaCEMS = () => {
             </tbody>
           </table>
         )}
+        <div className="flex justify-between items-center px-6 py-4 border-t bg-gray-50">
+          <Button
+            variant="secondary"
+            disabled={currentPage === 1}
+            onClick={() => loadCarpetas(currentPage - 1)}
+          >
+            Anterior
+          </Button>
+
+          <span className="text-sm text-gray-600">
+            Página {currentPage} de {totalPages}
+          </span>
+
+          <Button
+            variant="secondary"
+            disabled={currentPage === totalPages}
+            onClick={() => loadCarpetas(currentPage + 1)}
+          >
+            Siguiente
+          </Button>
+        </div>
       </div>
     </div>
   );

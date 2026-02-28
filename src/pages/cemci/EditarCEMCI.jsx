@@ -45,6 +45,7 @@ const EditarCEMCI = () => {
   const [seguimiento, setSeguimiento] = useState(null);
   const [cjosDisponibles, setCjosDisponibles] = useState([]);
   const [estadosProcesales, setEstadosProcesales] = useState([]);
+  const [numeroCJO, setNumeroCJO] = useState('');
 
   const {
     register,
@@ -111,6 +112,12 @@ const EditarCEMCI = () => {
       const cjoData = response.data || response;
       if (cjoData) {
         setCjosDisponibles([cjoData]);
+        setNumeroCJO(cjoData.numero_cjo);
+
+        reset(prev => ({
+          ...prev,
+          cjo_id: cjoData.id_cjo
+        }));
       }
     } catch (error) {
       setCjosDisponibles([]);
@@ -252,16 +259,15 @@ const EditarCEMCI = () => {
               <p className="text-gray-900">{cemci?.numero_cj || 'N/A'}</p>
             </div>
 
-            <Select
-              label="CJO (si existe)"
-              error={errors.cjo_id?.message}
-              options={[
-                { value: '', label: 'Sin CJO' },
-                ...cjosDisponibles.map(cjo => ({
-                  value: cjo.id_cjo,
-                  label: cjo.numero_cjo
-                }))
-              ]}
+            <Input
+              label="CJO"
+              value={numeroCJO}
+              onChange={(e) => setNumeroCJO(e.target.value)}
+              placeholder="Ingrese número de CJO"
+            />
+
+            <input
+              type="hidden"
               {...register('cjo_id')}
             />
 

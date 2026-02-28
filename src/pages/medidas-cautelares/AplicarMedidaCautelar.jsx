@@ -172,8 +172,9 @@ const AplicarMedidaCautelar = () => {
             />
 
             <Input
-              label="Fecha de Término (Opcional)"
+              label="Fecha de Término"
               type="date"
+              required
               error={errors.fecha_revocacion_medida?.message}
               helpText="Fecha en que termina la medida cautelar"
               {...register('fecha_revocacion_medida')}

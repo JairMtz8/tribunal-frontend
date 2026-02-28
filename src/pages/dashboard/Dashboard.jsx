@@ -1,202 +1,285 @@
 // src/pages/dashboard/Dashboard.jsx
+import { useEffect, useState } from 'react';
 import {
   Users,
   Folder,
-  Calendar,
-  TrendingUp,
   FileText,
+  Shield,
   Scale,
-  AlertCircle,
-  CheckCircle
+  TrendingUp,
+  Calendar,
+  Clock
 } from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore';
+import logo from '../../assets/tujpa-logo.png';
 
 const Dashboard = () => {
   const { user } = useAuthStore();
+  const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Stats de ejemplo
-  const stats = [
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatTime = (date) => {
+    return date.toLocaleTimeString('es-MX', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  };
+
+  const formatDate = (date) => {
+    return date.toLocaleDateString('es-MX', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  // Stats cards según rol
+  const statsCards = [
     {
-      name: 'Procesos Activos',
-      value: '24',
-      change: '+12%',
-      icon: Folder,
-      color: 'blue'
+      titulo: 'Sistema',
+      valor: 'Activo',
+      icono: TrendingUp,
+      color: 'green',
+      descripcion: 'Funcionando correctamente'
     },
     {
-      name: 'Adolescentes',
-      value: '156',
-      change: '+5%',
-      icon: Users,
-      color: 'green'
+      titulo: 'Rol Actual',
+      valor: user?.rol_nombre || 'Usuario',
+      icono: Users,
+      color: 'blue',
+      descripcion: 'Permisos asignados'
     },
     {
-      name: 'Audiencias Hoy',
-      value: '8',
-      change: '0%',
-      icon: Calendar,
-      color: 'purple'
-    },
-    {
-      name: 'Carpetas Nuevas',
-      value: '12',
-      change: '+8%',
-      icon: FileText,
-      color: 'orange'
+      titulo: 'Sesión',
+      valor: 'Conectado',
+      icono: Clock,
+      color: 'purple',
+      descripcion: 'Usuario autenticado'
     }
   ];
 
+  const modulosDisponibles = [
+    {
+      nombre: 'Adolescentes',
+      descripcion: 'Gestión de expedientes de adolescentes',
+      icono: Users,
+      color: 'blue',
+      roles: ['Administrador', 'Juzgado', 'CEMCI', 'CEMS']
+    },
+    {
+      nombre: 'Procesos',
+      descripcion: 'Seguimiento de procesos judiciales',
+      icono: Folder,
+      color: 'green',
+      roles: ['Administrador', 'Juzgado', 'CEMCI', 'CEMS']
+    },
+    {
+      nombre: 'Carpetas',
+      descripcion: 'CJ, CJO, CEMCI y CEMS',
+      icono: FileText,
+      color: 'purple',
+      roles: ['Administrador', 'Juzgado', 'CEMCI', 'CEMS']
+    },
+    {
+      nombre: 'Medidas Cautelares',
+      descripcion: 'Aplicación y seguimiento de medidas',
+      icono: Shield,
+      color: 'yellow',
+      roles: ['Administrador', 'Juzgado', 'CEMCI']
+    },
+    {
+      nombre: 'Medidas Sancionadoras',
+      descripcion: 'Aplicación de sanciones',
+      icono: Scale,
+      color: 'orange',
+      roles: ['Administrador', 'Juzgado', 'CEMS']
+    },
+    {
+      nombre: 'Audiencias',
+      descripcion: 'Programación y seguimiento',
+      icono: Calendar,
+      color: 'red',
+      roles: ['Administrador', 'Juzgado']
+    }
+  ];
+
+  const modulosAccesibles = modulosDisponibles.filter(modulo =>
+    modulo.roles.includes(user?.rol_nombre)
+  );
+
   const colorClasses = {
-    blue: 'bg-blue-100 text-blue-600',
-    green: 'bg-green-100 text-green-600',
-    purple: 'bg-purple-100 text-purple-600',
-    orange: 'bg-orange-100 text-orange-600'
+    blue: 'bg-blue-100 text-blue-600 border-blue-200',
+    green: 'bg-green-100 text-green-600 border-green-200',
+    purple: 'bg-purple-100 text-purple-600 border-purple-200',
+    yellow: 'bg-yellow-100 text-yellow-600 border-yellow-200',
+    orange: 'bg-orange-100 text-orange-600 border-orange-200',
+    red: 'bg-red-100 text-red-600 border-red-200'
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">
-          ¡Bienvenido, {user?.nombre}!
-        </h1>
-        <p className="text-gray-600">
-          Resumen del sistema - {new Date().toLocaleDateString('es-MX', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          })}
-        </p>
+      {/* Hero Section con Logo */}
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow-lg overflow-hidden">
+        <div className="p-8">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-4 mb-4">
+                <img
+                  src={logo}
+                  alt="TUJPA Logo"
+                  className="h-16 w-auto bg-white rounded-lg p-2"
+                />
+                <div>
+                  <h1 className="text-3xl font-bold text-white">
+                    Tribunal para Adolescentes
+                  </h1>
+                  <p className="text-blue-100 text-lg">
+                    Sistema de Gestión Judicial
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 text-white">
+                <p className="text-xl font-semibold">
+                  ¡Bienvenido, {user?.nombre}!
+                </p>
+                <p className="text-blue-100 mt-1">
+                  {formatDate(currentTime)}
+                </p>
+              </div>
+            </div>
+            <div className="hidden lg:block text-right text-white">
+              <div className="text-5xl font-bold font-mono">
+                {formatTime(currentTime)}
+              </div>
+              <p className="text-blue-100 mt-2">Hora actual</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {statsCards.map((stat, index) => (
           <div
-            key={stat.name}
-            className="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition"
+            key={index}
+            className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500"
           >
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className={`p-3 rounded-lg ${colorClasses[stat.color]}`}>
-                    <stat.icon className="w-6 h-6" />
-                  </div>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      {stat.name}
-                    </dt>
-                    <dd className="flex items-baseline">
-                      <div className="text-2xl font-semibold text-gray-900">
-                        {stat.value}
-                      </div>
-                      <div className={`ml-2 flex items-baseline text-sm font-semibold ${stat.change.startsWith('+') ? 'text-green-600' : 'text-gray-500'
-                        }`}>
-                        {stat.change}
-                      </div>
-                    </dd>
-                  </dl>
-                </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">{stat.titulo}</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">
+                  {stat.valor}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">{stat.descripcion}</p>
+              </div>
+              <div className={`p-3 rounded-lg ${colorClasses[stat.color]}`}>
+                <stat.icono className="w-8 h-8" />
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Acciones rápidas */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Acciones Rápidas
-          </h2>
-          <div className="space-y-3">
-            <button className="w-full flex items-center gap-3 p-3 text-left border border-gray-200 rounded-lg hover:bg-gray-50 transition">
-              <Users className="w-5 h-5 text-blue-600" />
-              <div>
-                <p className="font-medium text-gray-900">Nuevo Adolescente</p>
-                <p className="text-sm text-gray-500">Registrar nuevo adolescente</p>
+      {/* Módulos Disponibles */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <FileText className="w-6 h-6 text-blue-600" />
+          Módulos Disponibles para tu Rol
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {modulosAccesibles.map((modulo, index) => (
+            <div
+              key={index}
+              className={`p-4 rounded-lg border-2 ${colorClasses[modulo.color]}`}
+            >
+              <div className="flex items-start gap-3">
+                <modulo.icono className="w-6 h-6 mt-1" />
+                <div>
+                  <h3 className="font-semibold text-gray-900">{modulo.nombre}</h3>
+                  <p className="text-sm text-gray-600 mt-1">{modulo.descripcion}</p>
+                </div>
               </div>
-            </button>
-
-            <button className="w-full flex items-center gap-3 p-3 text-left border border-gray-200 rounded-lg hover:bg-gray-50 transition">
-              <Folder className="w-5 h-5 text-green-600" />
-              <div>
-                <p className="font-medium text-gray-900">Nuevo Proceso</p>
-                <p className="text-sm text-gray-500">Iniciar nuevo proceso judicial</p>
-              </div>
-            </button>
-
-            <button className="w-full flex items-center gap-3 p-3 text-left border border-gray-200 rounded-lg hover:bg-gray-50 transition">
-              <Calendar className="w-5 h-5 text-purple-600" />
-              <div>
-                <p className="font-medium text-gray-900">Agendar Audiencia</p>
-                <p className="text-sm text-gray-500">Programar nueva audiencia</p>
-              </div>
-            </button>
-          </div>
+            </div>
+          ))}
         </div>
-
-        {/* Actividad reciente */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Actividad Reciente
-          </h2>
-          <div className="space-y-4">
-            <div className="flex items-start gap-3">
-              <CheckCircle className="w-5 h-5 text-green-500 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-gray-900">
-                  Proceso CJ-045/2025 actualizado
-                </p>
-                <p className="text-xs text-gray-500">Hace 2 horas</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-orange-500 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-gray-900">
-                  Audiencia programada para mañana
-                </p>
-                <p className="text-xs text-gray-500">Hace 3 horas</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <CheckCircle className="w-5 h-5 text-green-500 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-gray-900">
-                  Nuevo adolescente registrado
-                </p>
-                <p className="text-xs text-gray-500">Hace 5 horas</p>
-              </div>
-            </div>
-          </div>
+        <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+          <p className="text-sm text-blue-800">
+            <strong>Tip:</strong> Utiliza el menú lateral para navegar rápidamente entre los diferentes módulos del sistema.
+          </p>
         </div>
       </div>
 
-      {/* Info adicional */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-        <div className="flex items-start gap-3">
-          <TrendingUp className="w-6 h-6 text-blue-600 mt-0.5" />
-          <div>
-            <h3 className="text-lg font-semibold text-blue-900 mb-2">
-              Sistema Completamente Funcional
-            </h3>
-            <p className="text-blue-800">
-              El sistema de gestión de procesos está activo y funcionando correctamente.
-              Todas las funcionalidades principales están disponibles.
-            </p>
-            <ul className="mt-3 space-y-1 text-sm text-blue-700">
-              <li>✓ Backend completo con 200+ endpoints</li>
-              <li>✓ Sistema de autenticación y permisos</li>
-              <li>✓ Gestión de carpetas CJ, CJO, CEMCI, CEMS</li>
-              <li>✓ Layout responsive con navegación</li>
-            </ul>
+      {/* Info del Sistema */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Características */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Características del Sistema
+          </h3>
+          <ul className="space-y-3">
+            <li className="flex items-start gap-3">
+              <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+              <div>
+                <p className="font-medium text-gray-900">Gestión Integral</p>
+                <p className="text-sm text-gray-600">Control completo de procesos judiciales</p>
+              </div>
+            </li>
+            <li className="flex items-start gap-3">
+              <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+              <div>
+                <p className="font-medium text-gray-900">Roles y Permisos</p>
+                <p className="text-sm text-gray-600">Sistema de acceso basado en roles</p>
+              </div>
+            </li>
+            <li className="flex items-start gap-3">
+              <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+              <div>
+                <p className="font-medium text-gray-900">Trazabilidad Completa</p>
+                <p className="text-sm text-gray-600">Seguimiento de todas las acciones</p>
+              </div>
+            </li>
+            <li className="flex items-start gap-3">
+              <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+              <div>
+                <p className="font-medium text-gray-900">Interfaz Intuitiva</p>
+                <p className="text-sm text-gray-600">Diseño moderno y fácil de usar</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        {/* Soporte */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Soporte y Ayuda
+          </h3>
+          <div className="space-y-4">
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <p className="font-medium text-gray-900">¿Necesitas ayuda?</p>
+              <p className="text-sm text-gray-600 mt-1">
+                Consulta el menú lateral para acceder a todos los módulos disponibles según tu rol.
+              </p>
+            </div>
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <p className="font-medium text-gray-900">Información del Usuario</p>
+              <div className="mt-2 space-y-1 text-sm">
+                <p className="text-gray-600">
+                  <strong>Usuario:</strong> {user?.usuario}
+                </p>
+                <p className="text-gray-600">
+                  <strong>Rol:</strong> {user?.rol_nombre}
+                </p>
+                <p className="text-gray-600">
+                  <strong>Email:</strong> {user?.correo}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
