@@ -73,6 +73,13 @@ import FormularioConducta from '../pages/catalogos/FormularioConducta';
 import ListaCalificativas from '../pages/catalogos/ListaCalificativas';
 import FormularioCalificativa from '../pages/catalogos/FormularioCalificativa';
 
+// Ejecución
+import ListaEjecucion from '../pages/ejecucion/ListaEjecucion';
+import FormularioEjecucion from '../pages/ejecucion/FormularioEjecucion';
+import DetalleInternamiento from '../pages/ejecucion/DetalleInternamiento';
+import DetalleLibertad from '../pages/ejecucion/DetalleLibertad';
+import DetalleCondena from '../pages/ejecucion/DetalleCondena';
+
 import useAuthStore from '../store/useAuthStore';
 
 const AppRoutes = () => {
@@ -184,6 +191,14 @@ const AppRoutes = () => {
           <Route path="medidas-cautelares" element={<ListaMedidasCautelares />} />
           <Route path="medidas-cautelares/:procesoId/aplicar" element={<AplicarMedidaCautelar />} />
           <Route path="medidas-cautelares/:procesoId/ver" element={<VerMedidasCautelares />} />
+
+          {/* Ejecución de Medidas */}
+          <Route path="ejecucion" element={<ListaEjecucion />} />
+          <Route path="ejecucion/nueva" element={<FormularioEjecucion />} />
+          <Route path="ejecucion/internamiento/:id" element={<DetalleInternamiento />} />
+          <Route path="ejecucion/libertad/:id" element={<DetalleLibertad />} />
+          <Route path="ejecucion/condena/:id" element={<DetalleCondena />} />
+          <Route path="ejecucion/:tipo/:id/editar" element={<FormularioEjecucion />} />
 
           {/* ========== CATÁLOGOS ========== */}
           {/* Conductas (Delitos) */}

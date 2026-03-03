@@ -10,6 +10,7 @@ const audienciaService = {
         if (filters.tipo) params.append('tipo', filters.tipo);
         if (filters.fecha_desde) params.append('fecha_desde', filters.fecha_desde);
         if (filters.fecha_hasta) params.append('fecha_hasta', filters.fecha_hasta);
+        if (filters.limit) params.append('limit', filters.limit);
         
         const response = await api.get(`/audiencias?${params.toString()}`);
         return response.data;

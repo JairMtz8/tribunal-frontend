@@ -13,8 +13,10 @@ const ListaMedidasSancionadoras = () => {
   const [medidas, setMedidas] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filtro, setFiltro] = useState('todas'); // todas, privativas, no-privativas
+  const [pagination, setPagination] = useState({ page: 1, limit: 10 });
 
   useEffect(() => {
+    setPagination(prev => ({ ...prev, page: 1 }));
     loadMedidas();
   }, [filtro]);
 
@@ -108,6 +110,10 @@ const ListaMedidasSancionadoras = () => {
     }
   };
 
+  const total = medidas.length;
+  const { page, limit } = pagination;
+  const medidasPagina = medidas.slice((page - 1) * limit, page * limit);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -188,7 +194,7 @@ const ListaMedidasSancionadoras = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {medidas.map((medida) => (
+              {medidasPagina.map((medida) => (
                 <tr key={medida.id_medida} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
@@ -259,6 +265,33 @@ const ListaMedidasSancionadoras = () => {
               ))}
             </tbody>
           </table>
+        )}
+        {total > limit && (
+          <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t">
+            <div className="text-sm text-gray-700">
+              Mostrando {((page - 1) * limit) + 1} a{' '}
+              {Math.min(page * limit, total)} de{' '}
+              {total} resultados
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={page === 1}
+                onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
+              >
+                Anterior
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={page * limit >= total}
+                onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
+              >
+                Siguiente
+              </Button>
+            </div>
+          </div>
         )}
       </div>
     </div>

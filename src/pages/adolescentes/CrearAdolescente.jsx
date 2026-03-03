@@ -44,7 +44,7 @@ const adolescenteSchema = yup.object().shape({
 const CrearAdolescente = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [consumeDrogas, setConsumeDrogas] = useState(false); // ✅ Estado para checkbox
+  const [consumeDrogas, setConsumeDrogas] = useState(false);
 
   const {
     register,

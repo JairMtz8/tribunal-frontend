@@ -12,7 +12,8 @@ import {
   Settings,
   BookOpen,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Gavel
 } from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore';
 
@@ -75,6 +76,12 @@ const Sidebar = ({ isOpen, onClose }) => {
       ]
     },
     {
+      name: 'Ejecución',
+      icon: Gavel,
+      path: '/ejecucion',
+      roles: ['Administrador', 'Juzgado', 'Juzgado Ejecución']
+    },
+    {
       name: 'Catálogos',
       icon: BookOpen,
       path: '/catalogos',
@@ -95,12 +102,6 @@ const Sidebar = ({ isOpen, onClose }) => {
       path: '/reportes',
       roles: ['Administrador', 'Juzgado']
     },
-    {
-      name: 'Configuración',
-      icon: Settings,
-      path: '/configuracion',
-      roles: ['Administrador']
-    }
   ];
 
   // Filtrar menú por rol

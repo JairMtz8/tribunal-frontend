@@ -19,25 +19,38 @@ const ListaMedidasCautelares = () => {
     tipo_fuero: '',
     tiene_medidas: '',
   });
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+  });
 
   useEffect(() => {
     loadCarpetas();
-  }, [filters]);
+  }, [pagination.page, filters]);
 
   const loadCarpetas = async () => {
     setIsLoading(true);
     try {
-      const params = { limit: 100 };
+      const params = {
+        page: pagination.page,
+        limit: pagination.limit,
+      };
 
       if (filters.tipo_fuero) params.tipo_fuero = filters.tipo_fuero;
       if (filters.tiene_medidas !== '') params.tiene_medidas = filters.tiene_medidas;
 
       const response = await cjService.getAll(params);
-      const data = response.data || [];
+      const data = Array.isArray(response) ? response : (response.data || []);
+      const paginationData = response.pagination || {};
+
       setCarpetas(data);
+      setPagination(prev => ({
+        ...prev,
+        total: paginationData.total || data.length || 0,
+      }));
     } catch (error) {
       toast.error('Error al cargar carpetas');
-      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -51,9 +64,10 @@ const ListaMedidasCautelares = () => {
 
     setIsLoading(true);
     try {
-      const response = await cjService.getAll({ search: searchTerm, limit: 100 });
-      const data = response.data || [];
+      const response = await cjService.getAll({ search: searchTerm });
+      const data = Array.isArray(response) ? response : (response.data || []);
       setCarpetas(data);
+      setPagination(prev => ({ ...prev, total: data.length }));
     } catch (error) {
       toast.error('Error en la búsqueda');
     } finally {
@@ -64,7 +78,7 @@ const ListaMedidasCautelares = () => {
   const handleClearFilters = () => {
     setSearchTerm('');
     setFilters({ tipo_fuero: '', tiene_medidas: '' });
-    loadCarpetas();
+    setPagination(prev => ({ ...prev, page: 1 }));
   };
 
   return (
@@ -102,7 +116,10 @@ const ListaMedidasCautelares = () => {
           <Select
             label="Tipo de Fuero"
             value={filters.tipo_fuero}
-            onChange={(e) => setFilters(prev => ({ ...prev, tipo_fuero: e.target.value }))}
+            onChange={(e) => {
+              setFilters(prev => ({ ...prev, tipo_fuero: e.target.value }));
+              setPagination(prev => ({ ...prev, page: 1 }));
+            }}
             options={[
               { value: '', label: 'Todos' },
               { value: 'FEDERAL', label: 'FEDERAL' },
@@ -113,7 +130,10 @@ const ListaMedidasCautelares = () => {
           <Select
             label="Medidas Cautelares"
             value={filters.tiene_medidas}
-            onChange={(e) => setFilters(prev => ({ ...prev, tiene_medidas: e.target.value }))}
+            onChange={(e) => {
+              setFilters(prev => ({ ...prev, tiene_medidas: e.target.value }));
+              setPagination(prev => ({ ...prev, page: 1 }));
+            }}
             options={[
               { value: '', label: 'Todas' },
               { value: '1', label: 'Con Medidas Cautelares' },
@@ -199,6 +219,33 @@ const ListaMedidasCautelares = () => {
               ))}
             </tbody>
           </table>
+        )}
+        {pagination.total > pagination.limit && (
+          <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t">
+            <div className="text-sm text-gray-700">
+              Mostrando {((pagination.page - 1) * pagination.limit) + 1} a{' '}
+              {Math.min(pagination.page * pagination.limit, pagination.total)} de{' '}
+              {pagination.total} resultados
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={pagination.page === 1}
+                onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
+              >
+                Anterior
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={pagination.page * pagination.limit >= pagination.total}
+                onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
+              >
+                Siguiente
+              </Button>
+            </div>
+          </div>
         )}
       </div>
     </div>

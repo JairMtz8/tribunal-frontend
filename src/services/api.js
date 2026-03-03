@@ -50,7 +50,9 @@ api.interceptors.response.use(
                     break;
 
                 case 404:
-                    toast.error(data.error?.message || 'Recurso no encontrado');
+                    if (!error.config?._silent) {
+                        toast.error(data.error?.message || 'Recurso no encontrado');
+                    }
                     break;
 
                 case 409:

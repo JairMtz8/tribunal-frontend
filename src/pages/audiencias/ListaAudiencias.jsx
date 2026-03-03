@@ -1,10 +1,11 @@
 // src/pages/audiencias/ListaAudiencias.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Plus, Eye, Filter } from 'lucide-react';
+import { Calendar, Plus, Eye, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import audienciaService from '../../services/audienciaService';
+import cjService from '../../services/cjService';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 
@@ -31,12 +32,8 @@ const ListaAudiencias = () => {
   const navigate = useNavigate();
   const [audiencias, setAudiencias] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [filtros, setFiltros] = useState({
-    tipo: '',
-    fecha_desde: '',
-    fecha_hasta: ''
-  });
-  const [mostrarFiltros, setMostrarFiltros] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [pagination, setPagination] = useState({ page: 1, limit: 10 });
 
   useEffect(() => {
     loadAudiencias();
@@ -45,8 +42,17 @@ const ListaAudiencias = () => {
   const loadAudiencias = async () => {
     setIsLoading(true);
     try {
-      const response = await audienciaService.getAll(filtros);
-      const data = Array.isArray(response) ? response : (response.data || []);
+      const [audienciasResponse, cjResponse] = await Promise.all([
+        audienciaService.getAll({ limit: 500 }),
+        cjService.getAll({ limit: 500 }),
+      ]);
+
+      const data = Array.isArray(audienciasResponse) ? audienciasResponse : (audienciasResponse.data || []);
+      const cjData = Array.isArray(cjResponse) ? cjResponse : (cjResponse.data || []);
+
+      // Mapa de id_cj -> numero_cj para enriquecer las audiencias
+      const cjMap = {};
+      cjData.forEach(cj => { cjMap[cj.id_cj] = cj.numero_cj; });
 
       const audienciasAgrupadas = [];
       const procesosVistos = new Set();
@@ -55,10 +61,8 @@ const ListaAudiencias = () => {
         if (!procesosVistos.has(audiencia.proceso_id)) {
           procesosVistos.add(audiencia.proceso_id);
 
-          // Contar audiencias de este proceso
           const audienciasDelProceso = data.filter(a => a.proceso_id === audiencia.proceso_id);
 
-          // Encontrar próxima audiencia
           const ahora = new Date();
           const proximasAudiencias = audienciasDelProceso
             .filter(a => parseLocalDate(a.fecha_audiencia) >= ahora)
@@ -70,6 +74,7 @@ const ListaAudiencias = () => {
 
           audienciasAgrupadas.push({
             ...proximaAudiencia,
+            numero_cj: proximaAudiencia.numero_cj || cjMap[proximaAudiencia.cj_id] || null,
             total_audiencias: audienciasDelProceso.length,
             proximas_audiencias: proximasAudiencias.length
           });
@@ -85,13 +90,9 @@ const ListaAudiencias = () => {
     }
   };
 
-  const handleFiltrar = () => {
-    loadAudiencias();
-  };
-
-  const handleLimpiarFiltros = () => {
-    setFiltros({ tipo: '', fecha_desde: '', fecha_hasta: '' });
-    setTimeout(() => loadAudiencias(), 100);
+  const handleClearSearch = () => {
+    setSearchTerm('');
+    setPagination(prev => ({ ...prev, page: 1 }));
   };
 
   const formatDateTime = (fecha) => {
@@ -108,13 +109,18 @@ const ListaAudiencias = () => {
     });
   };
 
-  const getCarpetaAsociada = (audiencia) => {
-    if (audiencia.numero_cj) return { tipo: 'CJ', numero: audiencia.numero_cj };
-    if (audiencia.numero_cjo) return { tipo: 'CJO', numero: audiencia.numero_cjo };
-    if (audiencia.numero_cemci) return { tipo: 'CEMCI', numero: audiencia.numero_cemci };
-    if (audiencia.numero_cems) return { tipo: 'CEMS', numero: audiencia.numero_cems };
-    return { tipo: 'N/A', numero: 'Sin carpeta' };
-  };
+  const getNumeroCJ = (audiencia) => audiencia.numero_cj || null;
+
+  const audienciasFiltradas = searchTerm.trim()
+    ? audiencias.filter(a =>
+        (a.adolescente_nombre || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (a.adolescente_iniciales || '').toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : audiencias;
+
+  const total = audienciasFiltradas.length;
+  const { page, limit } = pagination;
+  const audienciasPagina = audienciasFiltradas.slice((page - 1) * limit, page * limit);
 
   return (
     <div className="space-y-6">
@@ -129,51 +135,26 @@ const ListaAudiencias = () => {
         </Button>
       </div>
 
-      {/* Filtros */}
-      <div className="bg-white rounded-lg shadow p-4">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-gray-900">Filtros</h3>
-          <button
-            onClick={() => setMostrarFiltros(!mostrarFiltros)}
-            className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-2"
-          >
-            <Filter className="w-4 h-4" />
-            {mostrarFiltros ? 'Ocultar' : 'Mostrar'}
-          </button>
-        </div>
-
-        {mostrarFiltros && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Input
-                label="Tipo de Audiencia"
-                placeholder="Ej: Inicial, Control..."
-                value={filtros.tipo}
-                onChange={(e) => setFiltros({ ...filtros, tipo: e.target.value })}
-              />
-              <Input
-                label="Fecha Desde"
-                type="date"
-                value={filtros.fecha_desde}
-                onChange={(e) => setFiltros({ ...filtros, fecha_desde: e.target.value })}
-              />
-              <Input
-                label="Fecha Hasta"
-                type="date"
-                value={filtros.fecha_hasta}
-                onChange={(e) => setFiltros({ ...filtros, fecha_hasta: e.target.value })}
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={handleFiltrar} size="sm">
-                Aplicar Filtros
-              </Button>
-              <Button onClick={handleLimpiarFiltros} variant="secondary" size="sm">
-                Limpiar
-              </Button>
-            </div>
+      {/* Búsqueda */}
+      <div className="bg-white p-4 rounded-lg shadow">
+        <div className="flex gap-3">
+          <div className="flex-1">
+            <Input
+              icon={Search}
+              placeholder="Buscar por nombre del adolescente..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setPagination(prev => ({ ...prev, page: 1 }));
+              }}
+            />
           </div>
-        )}
+          {searchTerm && (
+            <Button variant="secondary" onClick={handleClearSearch}>
+              Limpiar
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Alerta informativa */}
@@ -232,8 +213,8 @@ const ListaAudiencias = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {audiencias.map((audiencia) => {
-                const carpeta = getCarpetaAsociada(audiencia);
+              {audienciasPagina.map((audiencia) => {
+                const numeroCJ = getNumeroCJ(audiencia);
 
                 return (
                   <tr key={audiencia.proceso_id} className="hover:bg-gray-50">
@@ -268,9 +249,15 @@ const ListaAudiencias = () => {
                       <div className="text-sm text-gray-900">{audiencia.tipo || 'N/A'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
-                        {carpeta.tipo}: {carpeta.numero}
-                      </span>
+                      {numeroCJ ? (
+                        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
+                          CJ: {numeroCJ}
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-500">
+                          Sin CJ
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
@@ -287,6 +274,33 @@ const ListaAudiencias = () => {
               })}
             </tbody>
           </table>
+        )}
+        {total > limit && (
+          <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t">
+            <div className="text-sm text-gray-700">
+              Mostrando {((page - 1) * limit) + 1} a{' '}
+              {Math.min(page * limit, total)} de{' '}
+              {total} resultados
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={page === 1}
+                onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
+              >
+                Anterior
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={page * limit >= total}
+                onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
+              >
+                Siguiente
+              </Button>
+            </div>
+          </div>
         )}
       </div>
     </div>
