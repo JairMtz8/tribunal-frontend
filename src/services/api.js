@@ -60,7 +60,9 @@ api.interceptors.response.use(
                     break;
 
                 case 500:
-                    toast.error('Error del servidor. Intenta más tarde.');
+                    if (!error.config?._silent) {
+                        toast.error('Error del servidor. Intenta más tarde.');
+                    }
                     break;
 
                 default:

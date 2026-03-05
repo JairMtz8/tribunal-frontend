@@ -73,6 +73,9 @@ import FormularioConducta from '../pages/catalogos/FormularioConducta';
 import ListaCalificativas from '../pages/catalogos/ListaCalificativas';
 import FormularioCalificativa from '../pages/catalogos/FormularioCalificativa';
 
+// Reportes
+import Reportes from '../pages/reportes/Reportes';
+
 // Ejecución
 import ListaEjecucion from '../pages/ejecucion/ListaEjecucion';
 import FormularioEjecucion from '../pages/ejecucion/FormularioEjecucion';
@@ -199,6 +202,9 @@ const AppRoutes = () => {
           <Route path="ejecucion/libertad/:id" element={<DetalleLibertad />} />
           <Route path="ejecucion/condena/:id" element={<DetalleCondena />} />
           <Route path="ejecucion/:tipo/:id/editar" element={<FormularioEjecucion />} />
+
+          {/* ========== REPORTES ========== */}
+          <Route path="reportes" element={<Reportes />} />
 
           {/* ========== CATÁLOGOS ========== */}
           {/* Conductas (Delitos) */}
