@@ -18,7 +18,7 @@ const ListaCJ = () => {
   const [filters, setFilters] = useState({
     tipo_fuero: '',
     vinculacion: '',
-    reincidente: ''
+    con_cjo: ''
   });
   const [pagination, setPagination] = useState({
     page: 1,
@@ -42,11 +42,14 @@ const ListaCJ = () => {
       // Solo agregar filtros si tienen valor
       if (filters.tipo_fuero) params.tipo_fuero = filters.tipo_fuero;
       if (filters.vinculacion !== '') params.vinculacion = filters.vinculacion;
-      if (filters.reincidente !== '') params.reincidente = filters.reincidente;
 
       const response = await cjService.getAll(params);
-      const data = Array.isArray(response) ? response : (response.data || []);
+      let data = Array.isArray(response) ? response : (response.data || []);
       const paginationData = response.pagination || {};
+
+      // Filtro client-side por CJO (el backend no lo soporta)
+      if (filters.con_cjo === '1') data = data.filter(c => c.id_cjo);
+      else if (filters.con_cjo === '0') data = data.filter(c => !c.id_cjo);
 
       setCarpetas(data);
       setPagination(prev => ({
@@ -82,7 +85,7 @@ const ListaCJ = () => {
 
   const handleClearSearch = () => {
     setSearchTerm('');
-    setFilters({ tipo_fuero: '', vinculacion: '', reincidente: '' });
+    setFilters({ tipo_fuero: '', vinculacion: '', con_cjo: '' });
     loadCarpetas();
   };
 
@@ -124,7 +127,7 @@ const ListaCJ = () => {
             />
           </div>
           <Button onClick={handleSearch}>Buscar</Button>
-          {(searchTerm || filters.tipo_fuero || filters.vinculacion || filters.reincidente) && (
+          {(searchTerm || filters.tipo_fuero || filters.vinculacion || filters.con_cjo) && (
             <Button variant="secondary" onClick={handleClearSearch}>
               Limpiar
             </Button>
@@ -156,13 +159,13 @@ const ListaCJ = () => {
           />
 
           <Select
-            label="Reincidentes"
-            value={filters.reincidente}
-            onChange={(e) => setFilters(prev => ({ ...prev, reincidente: e.target.value }))}
+            label="CJO"
+            value={filters.con_cjo}
+            onChange={(e) => setFilters(prev => ({ ...prev, con_cjo: e.target.value }))}
             options={[
               { value: '', label: 'Todos' },
-              { value: '1', label: 'Reincidentes' },
-              { value: '0', label: 'No Reincidentes' }
+              { value: '1', label: 'Con CJO' },
+              { value: '0', label: 'Sin CJO' }
             ]}
           />
         </div>

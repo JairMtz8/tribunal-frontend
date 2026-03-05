@@ -76,6 +76,13 @@ import FormularioCalificativa from '../pages/catalogos/FormularioCalificativa';
 // Reportes
 import Reportes from '../pages/reportes/Reportes';
 
+// Usuarios
+import ListaUsuarios from '../pages/usuarios/ListaUsuarios';
+import FormularioUsuario from '../pages/usuarios/FormularioUsuario';
+
+// Perfil
+import MiPerfil from '../pages/perfil/MiPerfil';
+
 // Ejecución
 import ListaEjecucion from '../pages/ejecucion/ListaEjecucion';
 import FormularioEjecucion from '../pages/ejecucion/FormularioEjecucion';
@@ -205,6 +212,14 @@ const AppRoutes = () => {
 
           {/* ========== REPORTES ========== */}
           <Route path="reportes" element={<Reportes />} />
+
+          {/* ========== USUARIOS ========== */}
+          <Route path="usuarios" element={<ListaUsuarios />} />
+          <Route path="usuarios/nuevo" element={<FormularioUsuario />} />
+          <Route path="usuarios/:id/editar" element={<FormularioUsuario />} />
+
+          {/* ========== PERFIL ========== */}
+          <Route path="perfil" element={<MiPerfil />} />
 
           {/* ========== CATÁLOGOS ========== */}
           {/* Conductas (Delitos) */}

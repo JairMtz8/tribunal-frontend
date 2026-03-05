@@ -13,7 +13,8 @@ import {
   BookOpen,
   ChevronDown,
   ChevronRight,
-  Gavel
+  Gavel,
+  UserCog
 } from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore';
 
@@ -33,31 +34,31 @@ const Sidebar = ({ isOpen, onClose }) => {
       name: 'Dashboard',
       icon: LayoutDashboard,
       path: '/dashboard',
-      roles: ['Administrador', 'Juzgado', 'CEMCI', 'CEMS']
+      roles: ['Administrador', 'Juzgados']
     },
     {
       name: 'Adolescentes',
       icon: Users,
       path: '/adolescentes',
-      roles: ['Administrador', 'Juzgado', 'CEMCI', 'CEMS']
+      roles: ['Administrador', 'Juzgados']
     },
     {
       name: 'Procesos',
       icon: Folder,
       path: '/procesos',
-      roles: ['Administrador', 'Juzgado', 'CEMCI', 'CEMS']
+      roles: ['Administrador', 'Juzgados']
     },
     {
       name: 'Audiencias',
       icon: Calendar,
       path: '/audiencias',
-      roles: ['Administrador', 'Juzgado']
+      roles: ['Administrador', 'Juzgados']
     },
     {
       name: 'Carpetas',
       icon: FileText,
       path: '/carpetas',
-      roles: ['Administrador', 'Juzgado', 'CEMCI', 'CEMS'],
+      roles: ['Administrador', 'Juzgados'],
       subItems: [
         { name: 'CJ', path: '/carpetas/cj' },
         { name: 'CJO', path: '/carpetas/cjo' },
@@ -69,7 +70,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       name: 'Medidas',
       icon: Scale,
       path: '/medidas',
-      roles: ['Administrador', 'Juzgado'],
+      roles: ['Administrador', 'Juzgados'],
       subItems: [
         { name: 'Cautelares', path: '/medidas-cautelares' },
         { name: 'Sancionadoras', path: '/medidas-sancionadoras' }
@@ -79,7 +80,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       name: 'Ejecución',
       icon: Gavel,
       path: '/ejecucion',
-      roles: ['Administrador', 'Juzgado', 'Juzgado Ejecución']
+      roles: ['Administrador', 'Juzgados', 'Juzgado Ejecución']
     },
     {
       name: 'Catálogos',
@@ -100,7 +101,13 @@ const Sidebar = ({ isOpen, onClose }) => {
       name: 'Reportes',
       icon: BarChart3,
       path: '/reportes',
-      roles: ['Administrador', 'Juzgado']
+      roles: ['Administrador', 'Juzgados', 'Juzgado Ejecución']
+    },
+    {
+      name: 'Usuarios',
+      icon: UserCog,
+      path: '/usuarios',
+      roles: ['Administrador']
     },
   ];
 

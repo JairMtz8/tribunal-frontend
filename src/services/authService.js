@@ -15,11 +15,17 @@ const authService = {
         return response.data;
     },
 
+    // Actualizar mi perfil
+    updateProfile: async (data) => {
+        const response = await api.put('/auth/me', data);
+        return response.data;
+    },
+
     // Cambiar contraseña
-    changePassword: async (currentPassword, newPassword) => {
-        const response = await api.put('/auth/change-password', {
-            currentPassword,
-            newPassword,
+    changePassword: async (contrasena_actual, contrasena_nueva) => {
+        const response = await api.post('/auth/change-password', {
+            contrasena_actual,
+            contrasena_nueva,
         });
         return response.data;
     },
