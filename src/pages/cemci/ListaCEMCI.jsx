@@ -1,7 +1,7 @@
 // src/pages/cemci/ListaCEMCI.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Eye, Edit, Trash2, FileText, Shield } from 'lucide-react';
+import { Search, Eye, Edit, Trash2, FileText, Shield, ShieldCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import cemciService from '../../services/cemciService';
@@ -61,7 +61,8 @@ const ListaCEMCI = () => {
 
       const response = await cemciService.getAll(params);
 
-      const data = response.data || [];
+      // Solo mostrar registros que tienen CEMCI asignado
+      const data = (response.data || []).filter(c => c.id_cemci);
       setCarpetas(data);
       setTotalPages(response.totalPages || 1);
 
@@ -82,7 +83,7 @@ const ListaCEMCI = () => {
     setIsLoading(true);
     try {
       const response = await cemciService.getAll({ search: searchTerm });
-      const data = Array.isArray(response) ? response : (response.data || []);
+      const data = (Array.isArray(response) ? response : (response.data || [])).filter(c => c.id_cemci);
       setCarpetas(data);
     } catch (error) {
       toast.error('Error en la búsqueda');
@@ -194,36 +195,19 @@ const ListaCEMCI = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Número CEMCI
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  CJ Origen
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  CJO
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Fecha Recepción
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Estado Procesal
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Estado
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                  Acciones
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Número CEMCI</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">CJ Origen</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha Recepción</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado Procesal</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Observaciones</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {carpetas.map((carpeta) => (
                 <tr key={carpeta.id_cemci} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {carpeta.numero_cemci}
-                    </div>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {carpeta.numero_cemci}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <button
@@ -233,20 +217,8 @@ const ListaCEMCI = () => {
                       {carpeta.numero_cj}
                     </button>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {carpeta.cjo_id ? (
-                      <button
-                        onClick={() => navigate(`/carpetas/cjo/${carpeta.cjo_id}`)}
-                        className="text-sm text-blue-600 hover:text-blue-900 hover:underline"
-                      >
-                        {carpeta.numero_cjo}
-                      </button>
-                    ) : (
-                      <span className="text-sm text-gray-400">Sin CJO</span>
-                    )}
-                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDate(carpeta.fecha_recepcion_cemci)}
+                    {carpeta.fecha_recepcion_cemci ? formatDate(carpeta.fecha_recepcion_cemci) : <span className="text-gray-400">—</span>}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {carpeta.estado_procesal_nombre ? (
@@ -254,19 +226,11 @@ const ListaCEMCI = () => {
                         {carpeta.estado_procesal_nombre}
                       </span>
                     ) : (
-                      <span className="text-sm text-gray-400">Sin estado</span>
+                      <span className="text-sm text-gray-400">—</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {carpeta.concluido ? (
-                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
-                        Concluido
-                      </span>
-                    ) : (
-                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                        Activo
-                      </span>
-                    )}
+                  <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
+                    {carpeta.observaciones || <span className="text-gray-400">—</span>}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end gap-2">
@@ -283,6 +247,13 @@ const ListaCEMCI = () => {
                         title="Editar"
                       >
                         <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => navigate(`/medidas-cautelares/${carpeta.proceso_id}/ver?origen=cemci`)}
+                        className="text-teal-600 hover:text-teal-900"
+                        title="Ver medidas cautelares"
+                      >
+                        <ShieldCheck className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(carpeta.id_cemci)}

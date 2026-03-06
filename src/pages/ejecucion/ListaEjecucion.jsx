@@ -56,34 +56,13 @@ const ListaEjecucion = () => {
     setIsLoading(true);
     try {
       let response;
-
       switch (tipoActivo) {
-        case 'internamiento':
-          response = await internamientoService.getAll();
-          break;
-        case 'libertad':
-          if (filtro === 'activas') {
-            response = await libertadService.getActivas();
-          } else if (filtro === 'cumplidas') {
-            response = await libertadService.getAll({ cumplida: true });
-          } else {
-            response = await libertadService.getAll();
-          }
-          break;
-        case 'condena':
-          if (filtro === 'activas') {
-            response = await condenaService.getAll({ cumplida: false });
-          } else if (filtro === 'cumplidas') {
-            response = await condenaService.getAll({ cumplida: true });
-          } else {
-            response = await condenaService.getAll();
-          }
-          break;
+        case 'internamiento': response = await internamientoService.getAll(); break;
+        case 'libertad':     response = await libertadService.getAll();      break;
+        case 'condena':      response = await condenaService.getAll();        break;
       }
-
       const raw = Array.isArray(response) ? response : (response.data ?? response);
-      const datos = Array.isArray(raw) ? raw : [];
-      setData(datos);
+      setData(Array.isArray(raw) ? raw : []);
     } catch (error) {
       toast.error('Error al cargar datos');
       console.error(error);
@@ -146,36 +125,14 @@ const ListaEjecucion = () => {
       );
     }
 
-    if (tipoActivo === 'libertad') {
-      if (item.cumplida) {
-        return (
-          <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
-            Cumplida
-          </span>
-        );
-      }
-      if (item.termino_obligaciones && new Date(item.termino_obligaciones) < new Date()) {
-        return (
-          <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-            Vencida
-          </span>
-        );
-      }
-      return (
-        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-          Activa
-        </span>
-      );
-    }
-
-    if (tipoActivo === 'condena') {
+    if (tipoActivo === 'libertad' || tipoActivo === 'condena') {
       return item.cumplida ? (
         <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
           Cumplida
         </span>
       ) : (
         <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-          Activa
+          No Cumplida
         </span>
       );
     }
@@ -217,8 +174,8 @@ const ListaEjecucion = () => {
                 setPagination(prev => ({ ...prev, page: 1 }));
               }}
               className={`px-6 py-4 text-sm font-medium border-b-2 ${tipoActivo === 'internamiento'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
             >
               Internamiento
@@ -235,8 +192,8 @@ const ListaEjecucion = () => {
                 setPagination(prev => ({ ...prev, page: 1 }));
               }}
               className={`px-6 py-4 text-sm font-medium border-b-2 ${tipoActivo === 'libertad'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
             >
               Libertad
@@ -253,8 +210,8 @@ const ListaEjecucion = () => {
                 setPagination(prev => ({ ...prev, page: 1 }));
               }}
               className={`px-6 py-4 text-sm font-medium border-b-2 ${tipoActivo === 'condena'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
             >
               Condena
@@ -289,8 +246,8 @@ const ListaEjecucion = () => {
                   onChange={(e) => { setFiltro(e.target.value); setPagination(prev => ({ ...prev, page: 1 })); }}
                   options={[
                     { value: '', label: 'Todas' },
-                    { value: 'activas', label: 'Activas' },
-                    { value: 'cumplidas', label: 'Cumplidas' }
+                    { value: 'cumplidas', label: 'Cumplidas' },
+                    { value: 'no_cumplidas', label: 'No Cumplidas' }
                   ]}
                 />
               </>
@@ -301,12 +258,15 @@ const ListaEjecucion = () => {
         {/* Tabla */}
         {(() => {
           const dataArray = Array.isArray(data) ? data : [];
-          const dataFiltrada = searchTerm.trim()
+          let dataFiltrada = searchTerm.trim()
             ? dataArray.filter(item =>
-                (item.adolescente_nombre || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (item.adolescente_iniciales || '').toLowerCase().includes(searchTerm.toLowerCase())
-              )
+              (item.adolescente_nombre || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (item.adolescente_iniciales || '').toLowerCase().includes(searchTerm.toLowerCase())
+            )
             : dataArray;
+
+          if (filtro === 'cumplidas') dataFiltrada = dataFiltrada.filter(item => item.cumplida);
+          else if (filtro === 'no_cumplidas') dataFiltrada = dataFiltrada.filter(item => !item.cumplida);
 
           const total = dataFiltrada.length;
           const { page, limit } = pagination;
@@ -366,9 +326,11 @@ const ListaEjecucion = () => {
                             </th>
                           </>
                         )}
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Estado
-                        </th>
+                        {tipoActivo !== 'internamiento' && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                            Estado
+                          </th>
+                        )}
                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
                           Acciones
                         </th>
@@ -430,19 +392,23 @@ const ListaEjecucion = () => {
                             </>
                           )}
 
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {getEstadoBadge(item)}
-                          </td>
+                          {tipoActivo !== 'internamiento' && (
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              {getEstadoBadge(item)}
+                            </td>
+                          )}
 
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div className="flex justify-end gap-2">
-                              <button
-                                onClick={() => navigate(`/ejecucion/${tipoActivo}/${item[`id_${tipoActivo}`]}`)}
-                                className="text-blue-600 hover:text-blue-900"
-                                title="Ver detalle"
-                              >
-                                <Eye className="w-4 h-4" />
-                              </button>
+                              {tipoActivo !== 'internamiento' && (
+                                <button
+                                  onClick={() => navigate(`/ejecucion/${tipoActivo}/${item[`id_${tipoActivo}`]}`)}
+                                  className="text-blue-600 hover:text-blue-900"
+                                  title="Ver detalle"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </button>
+                              )}
                               <button
                                 onClick={() => navigate(`/ejecucion/${tipoActivo}/${item[`id_${tipoActivo}`]}/editar`)}
                                 className="text-green-600 hover:text-green-900"

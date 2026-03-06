@@ -1,7 +1,7 @@
 // src/pages/cj/ListaCJ.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Eye, Edit, Trash2, FileText } from 'lucide-react';
+import { Plus, Search, Eye, Edit, Trash2, FileText, Shield, ShieldCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import cjService from '../../services/cjService';
@@ -10,52 +10,42 @@ import Input from '../../components/common/Input';
 import Select from '../../components/common/Select';
 import { formatDate } from '../../utils/formatters';
 
+const LIMIT = 10;
+
 const ListaCJ = () => {
   const navigate = useNavigate();
-  const [carpetas, setCarpetas] = useState([]);
+  const [todas, setTodas] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
     tipo_fuero: '',
-    vinculacion: '',
-    con_cjo: ''
+    con_cjo: '',
+    con_medidas: ''
   });
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 10,
-    total: 0,
-  });
+  const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
-    loadCarpetas();
-  }, [pagination.page, filters]);
-
-  const loadCarpetas = async () => {
+  const loadCarpetas = async (search = '', fuero = '') => {
     setIsLoading(true);
     try {
-      // Construir params solo con valores no vacíos
-      const params = {
-        page: pagination.page,
-        limit: pagination.limit,
-      };
+      let allData = [];
+      let page = 1;
+      const limit = 50;
 
-      // Solo agregar filtros si tienen valor
-      if (filters.tipo_fuero) params.tipo_fuero = filters.tipo_fuero;
-      if (filters.vinculacion !== '') params.vinculacion = filters.vinculacion;
+      while (true) {
+        const params = { page, limit };
+        if (search) params.search = search;
+        if (fuero) params.tipo_fuero = fuero;
+        const response = await cjService.getAll(params);
+        const data = Array.isArray(response) ? response : (response.data || []);
+        const total = response.pagination?.total ?? data.length;
 
-      const response = await cjService.getAll(params);
-      let data = Array.isArray(response) ? response : (response.data || []);
-      const paginationData = response.pagination || {};
+        allData = [...allData, ...data];
+        if (allData.length >= total || data.length < limit) break;
+        page++;
+      }
 
-      // Filtro client-side por CJO (el backend no lo soporta)
-      if (filters.con_cjo === '1') data = data.filter(c => c.id_cjo);
-      else if (filters.con_cjo === '0') data = data.filter(c => !c.id_cjo);
-
-      setCarpetas(data);
-      setPagination(prev => ({
-        ...prev,
-        total: paginationData.total || data.length || 0
-      }));
+      setTodas(allData);
+      setCurrentPage(1);
     } catch (error) {
       toast.error('Error al cargar carpetas');
       console.error(error);
@@ -64,30 +54,36 @@ const ListaCJ = () => {
     }
   };
 
-  const handleSearch = async () => {
-    if (!searchTerm.trim()) {
-      loadCarpetas();
-      return;
-    }
+  useEffect(() => { loadCarpetas(); }, []);
 
-    setIsLoading(true);
-    try {
-      const response = await cjService.getAll({ search: searchTerm });
-      const data = Array.isArray(response) ? response : (response.data || []);
-      setCarpetas(data);
-      setPagination(prev => ({ ...prev, total: data.length }));
-    } catch (error) {
-      toast.error('Error en la búsqueda');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const handleSearch = () => loadCarpetas(searchTerm.trim(), filters.tipo_fuero);
 
   const handleClearSearch = () => {
     setSearchTerm('');
-    setFilters({ tipo_fuero: '', vinculacion: '', con_cjo: '' });
-    loadCarpetas();
+    setFilters({ tipo_fuero: '', con_cjo: '', con_medidas: '' });
+    loadCarpetas('', '');
   };
+
+  const handleFueroChange = (e) => {
+    const val = e.target.value;
+    setFilters(prev => ({ ...prev, tipo_fuero: val }));
+    loadCarpetas(searchTerm.trim(), val);
+  };
+
+  // Filtros client-side (con_cjo, con_medidas)
+  const filtradas = useMemo(() => {
+    let data = todas;
+    if (filters.con_cjo === '1') data = data.filter(c => c.id_cjo);
+    else if (filters.con_cjo === '0') data = data.filter(c => !c.id_cjo);
+    if (filters.con_medidas === '1') data = data.filter(c => Number(c.total_medidas_cautelares) > 0);
+    else if (filters.con_medidas === '0') data = data.filter(c => Number(c.total_medidas_cautelares) === 0);
+    return data;
+  }, [todas, filters.con_cjo, filters.con_medidas]);
+
+  useEffect(() => { setCurrentPage(1); }, [filters.con_cjo, filters.con_medidas]);
+
+  const totalPages = Math.max(1, Math.ceil(filtradas.length / LIMIT));
+  const pagina = filtradas.slice((currentPage - 1) * LIMIT, currentPage * LIMIT);
 
   const handleDelete = async (id) => {
     if (!confirm('¿Estás seguro de eliminar esta carpeta CJ?')) return;
@@ -95,7 +91,7 @@ const ListaCJ = () => {
     try {
       await cjService.delete(id);
       toast.success('Carpeta eliminada correctamente');
-      loadCarpetas();
+      loadCarpetas(searchTerm.trim(), filters.tipo_fuero);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Error al eliminar carpeta');
     }
@@ -127,7 +123,7 @@ const ListaCJ = () => {
             />
           </div>
           <Button onClick={handleSearch}>Buscar</Button>
-          {(searchTerm || filters.tipo_fuero || filters.vinculacion || filters.con_cjo) && (
+          {(searchTerm || filters.tipo_fuero || filters.con_cjo || filters.con_medidas) && (
             <Button variant="secondary" onClick={handleClearSearch}>
               Limpiar
             </Button>
@@ -139,7 +135,7 @@ const ListaCJ = () => {
           <Select
             label="Tipo de Fuero"
             value={filters.tipo_fuero}
-            onChange={(e) => setFilters(prev => ({ ...prev, tipo_fuero: e.target.value }))}
+            onChange={handleFueroChange}
             options={[
               { value: '', label: 'Todos' },
               { value: 'FEDERAL', label: 'FEDERAL' },
@@ -148,13 +144,13 @@ const ListaCJ = () => {
           />
 
           <Select
-            label="Vinculación"
-            value={filters.vinculacion}
-            onChange={(e) => setFilters(prev => ({ ...prev, vinculacion: e.target.value }))}
+            label="Medidas Cautelares"
+            value={filters.con_medidas}
+            onChange={(e) => setFilters(prev => ({ ...prev, con_medidas: e.target.value }))}
             options={[
               { value: '', label: 'Todos' },
-              { value: '1', label: 'Vinculados' },
-              { value: '0', label: 'No Vinculados' }
+              { value: '1', label: 'Con Medidas' },
+              { value: '0', label: 'Sin Medidas' }
             ]}
           />
 
@@ -178,7 +174,7 @@ const ListaCJ = () => {
             <div className="inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
             <p className="mt-4 text-gray-600">Cargando carpetas...</p>
           </div>
-        ) : carpetas.length === 0 ? (
+        ) : filtradas.length === 0 ? (
           <div className="p-12 text-center">
             <p className="text-gray-600">No se encontraron carpetas</p>
           </div>
@@ -208,7 +204,7 @@ const ListaCJ = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {carpetas.map((carpeta) => (
+                {pagina.map((carpeta) => (
                   <tr key={carpeta.id_cj} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
@@ -273,6 +269,23 @@ const ListaCJ = () => {
                             <Plus className="w-4 h-4" />
                           </button>
                         )}
+                        {Number(carpeta.total_medidas_cautelares) > 0 ? (
+                          <button
+                            onClick={() => navigate(`/medidas-cautelares/${carpeta.proceso_id}/ver?origen=cj`)}
+                            className="text-teal-600 hover:text-teal-900"
+                            title={`Ver ${carpeta.total_medidas_cautelares} medida${carpeta.total_medidas_cautelares > 1 ? 's' : ''} cautelar${carpeta.total_medidas_cautelares > 1 ? 'es' : ''}`}
+                          >
+                            <ShieldCheck className="w-4 h-4" />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => navigate(`/medidas-cautelares/${carpeta.proceso_id}/aplicar?origen=cj`)}
+                            className="text-teal-600 hover:text-teal-900"
+                            title="Aplicar medida cautelar"
+                          >
+                            <Shield className="w-4 h-4" />
+                          </button>
+                        )}
                         <button
                           onClick={() => handleDelete(carpeta.id_cj)}
                           className="text-red-600 hover:text-red-900"
@@ -288,27 +301,25 @@ const ListaCJ = () => {
             </table>
 
             {/* Paginación */}
-            {pagination.total > pagination.limit && (
+            {filtradas.length > LIMIT && (
               <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t">
-                <div className="text-sm text-gray-700">
-                  Mostrando {((pagination.page - 1) * pagination.limit) + 1} a{' '}
-                  {Math.min(pagination.page * pagination.limit, pagination.total)} de{' '}
-                  {pagination.total} resultados
-                </div>
+                <span className="text-sm text-gray-700">
+                  Mostrando {((currentPage - 1) * LIMIT) + 1}–{Math.min(currentPage * LIMIT, filtradas.length)} de {filtradas.length} resultados
+                </span>
                 <div className="flex gap-2">
                   <Button
                     variant="secondary"
                     size="sm"
-                    disabled={pagination.page === 1}
-                    onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(p => p - 1)}
                   >
                     Anterior
                   </Button>
                   <Button
                     variant="secondary"
                     size="sm"
-                    disabled={pagination.page * pagination.limit >= pagination.total}
-                    onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(p => p + 1)}
                   >
                     Siguiente
                   </Button>

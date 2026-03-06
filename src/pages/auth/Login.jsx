@@ -240,12 +240,6 @@ const Login = () => {
             </div>
           </div>
 
-          <div className="mt-5 text-center text-sm text-gray-500">
-            ¿Problemas para acceder?{' '}
-            <button className="text-blue-600 hover:text-blue-500 font-medium">
-              Contacta al administrador
-            </button>
-          </div>
         </div>
       </div>
     </div>

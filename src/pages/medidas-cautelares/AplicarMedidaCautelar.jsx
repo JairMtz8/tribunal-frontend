@@ -1,6 +1,6 @@
 // src/pages/medidas-cautelares/AplicarMedidaCautelar.jsx
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -25,6 +25,9 @@ const aplicarMedidaSchema = yup.object().shape({
 const AplicarMedidaCautelar = () => {
   const { procesoId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const origen = searchParams.get('origen');
+  const backPath = origen === 'cj' ? '/carpetas/cj' : origen === 'cemci' ? '/carpetas/cemci' : '/medidas-cautelares';
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [tiposMedida, setTiposMedida] = useState([]);
@@ -93,7 +96,7 @@ const AplicarMedidaCautelar = () => {
         toast.success('Medida cautelar aplicada correctamente');
       }
 
-      navigate(`/medidas-cautelares/${procesoId}/ver`);
+      navigate(`/medidas-cautelares/${procesoId}/ver${origen ? `?origen=${origen}` : ''}`);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Error al aplicar medida cautelar');
       console.error(error);
@@ -119,7 +122,7 @@ const AplicarMedidaCautelar = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="outline" size="sm" icon={ArrowLeft} onClick={() => navigate('/medidas-cautelares')}>
+        <Button variant="outline" size="sm" icon={ArrowLeft} onClick={() => navigate(backPath)}>
           Volver
         </Button>
         <div>
@@ -194,7 +197,7 @@ const AplicarMedidaCautelar = () => {
           </div>
 
           <div className="flex justify-between pt-4 border-t">
-            <Button type="button" variant="secondary" onClick={() => navigate('/medidas-cautelares')}>
+            <Button type="button" variant="secondary" onClick={() => navigate(backPath)}>
               Cancelar
             </Button>
             <Button type="submit" icon={Save} isLoading={isSaving}>

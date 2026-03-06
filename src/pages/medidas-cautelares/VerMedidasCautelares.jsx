@@ -1,6 +1,6 @@
 // src/pages/medidas-cautelares/VerMedidasCautelares.jsx
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Shield, Plus, XCircle, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -12,6 +12,9 @@ import { formatDate } from '../../utils/formatters';
 const VerMedidasCautelares = () => {
   const { procesoId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const origen = searchParams.get('origen'); // 'cemci' si viene desde ListaCEMCI
+  const backPath = origen === 'cj' ? '/carpetas/cj' : origen === 'cemci' ? '/carpetas/cemci' : '/medidas-cautelares';
   const [isLoading, setIsLoading] = useState(true);
   const [medidas, setMedidas] = useState([]);
   const [proceso, setProceso] = useState(null);
@@ -75,7 +78,7 @@ const VerMedidasCautelares = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" icon={ArrowLeft} onClick={() => navigate('/medidas-cautelares')}>
+          <Button variant="outline" size="sm" icon={ArrowLeft} onClick={() => navigate(backPath)}>
             Volver
           </Button>
           <div>
@@ -86,7 +89,7 @@ const VerMedidasCautelares = () => {
             </p>
           </div>
         </div>
-        <Button icon={Plus} onClick={() => navigate(`/medidas-cautelares/${procesoId}/aplicar`)}>
+        <Button icon={Plus} onClick={() => navigate(`/medidas-cautelares/${procesoId}/aplicar${origen ? `?origen=${origen}` : ''}`)}>
           Aplicar Nueva Medida
         </Button>
       </div>
@@ -97,7 +100,7 @@ const VerMedidasCautelares = () => {
           <div className="p-12 text-center">
             <Shield className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-600 mb-4">No hay medidas cautelares aplicadas</p>
-            <Button onClick={() => navigate(`/medidas-cautelares/${procesoId}/aplicar`)}>
+            <Button onClick={() => navigate(`/medidas-cautelares/${procesoId}/aplicar${origen ? `?origen=${origen}` : ''}`)}>
               Aplicar Primera Medida
             </Button>
           </div>

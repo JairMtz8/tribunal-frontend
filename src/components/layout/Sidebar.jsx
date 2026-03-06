@@ -34,31 +34,31 @@ const Sidebar = ({ isOpen, onClose }) => {
       name: 'Dashboard',
       icon: LayoutDashboard,
       path: '/dashboard',
-      roles: ['Administrador', 'Juzgados']
+      roles: ['Administrador', 'Juzgados', 'Juzgado de Ejecución']
     },
     {
       name: 'Adolescentes',
       icon: Users,
       path: '/adolescentes',
-      roles: ['Administrador', 'Juzgados']
+      roles: ['Administrador', 'Juzgados', 'Juzgado de Ejecución']
     },
     {
       name: 'Procesos',
       icon: Folder,
       path: '/procesos',
-      roles: ['Administrador', 'Juzgados']
+      roles: ['Administrador', 'Juzgados', 'Juzgado de Ejecución']
     },
     {
       name: 'Audiencias',
       icon: Calendar,
       path: '/audiencias',
-      roles: ['Administrador', 'Juzgados']
+      roles: ['Administrador', 'Juzgados', 'Juzgado de Ejecución'],
     },
     {
       name: 'Carpetas',
       icon: FileText,
       path: '/carpetas',
-      roles: ['Administrador', 'Juzgados'],
+      roles: ['Administrador', 'Juzgados', 'Juzgado de Ejecución'],
       subItems: [
         { name: 'CJ', path: '/carpetas/cj' },
         { name: 'CJO', path: '/carpetas/cjo' },
@@ -70,7 +70,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       name: 'Medidas',
       icon: Scale,
       path: '/medidas',
-      roles: ['Administrador', 'Juzgados'],
+      roles: ['Administrador', 'Juzgados', 'Juzgado de Ejecución'],
       subItems: [
         { name: 'Cautelares', path: '/medidas-cautelares' },
         { name: 'Sancionadoras', path: '/medidas-sancionadoras' }
@@ -80,7 +80,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       name: 'Ejecución',
       icon: Gavel,
       path: '/ejecucion',
-      roles: ['Administrador', 'Juzgados', 'Juzgado Ejecución']
+      roles: ['Administrador', 'Juzgados', 'Juzgado de Ejecución']
     },
     {
       name: 'Catálogos',
@@ -101,7 +101,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       name: 'Reportes',
       icon: BarChart3,
       path: '/reportes',
-      roles: ['Administrador', 'Juzgados', 'Juzgado Ejecución']
+      roles: ['Administrador', 'Juzgados', 'Juzgado de Ejecución']
     },
     {
       name: 'Usuarios',
