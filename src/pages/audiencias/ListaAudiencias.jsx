@@ -112,10 +112,14 @@ const ListaAudiencias = () => {
   const getNumeroCJ = (audiencia) => audiencia.numero_cj || null;
 
   const audienciasFiltradas = searchTerm.trim()
-    ? audiencias.filter(a =>
-        (a.adolescente_nombre || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (a.adolescente_iniciales || '').toLowerCase().includes(searchTerm.toLowerCase())
-      )
+    ? audiencias.filter(a => {
+        const q = searchTerm.toLowerCase();
+        return (
+          (a.adolescente_nombre || '').toLowerCase().includes(q) ||
+          (a.adolescente_iniciales || '').toLowerCase().includes(q) ||
+          (a.numero_cj || '').toLowerCase().includes(q)
+        );
+      })
     : audiencias;
 
   const total = audienciasFiltradas.length;

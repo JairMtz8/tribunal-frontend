@@ -1,5 +1,5 @@
 // src/pages/medidas-cautelares/ListaMedidasCautelares.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, Shield, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -20,7 +20,7 @@ const ListaMedidasCautelares = () => {
   const [filtroFuero, setFiltroFuero] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
-  const loadCarpetas = async (search = '', fuero = '') => {
+  const loadCarpetas = async (fuero = '') => {
     setIsLoading(true);
     try {
       let allData = [];
@@ -29,7 +29,6 @@ const ListaMedidasCautelares = () => {
 
       while (true) {
         const params = { page, limit };
-        if (search) params.search = search;
         if (fuero) params.tipo_fuero = fuero;
         const response = await cjService.getAll(params);
         const data = Array.isArray(response) ? response : (response.data || []);
@@ -52,22 +51,32 @@ const ListaMedidasCautelares = () => {
 
   useEffect(() => { loadCarpetas(); }, []);
 
-  const handleSearch = () => loadCarpetas(searchTerm.trim(), filtroFuero);
+  const handleSearch = () => setCurrentPage(1);
 
   const handleFueroChange = (e) => {
     const val = e.target.value;
     setFiltroFuero(val);
-    loadCarpetas(searchTerm.trim(), val);
+    loadCarpetas(val);
   };
 
   const handleClearFilters = () => {
     setSearchTerm('');
     setFiltroFuero('');
-    loadCarpetas('', '');
+    loadCarpetas('');
   };
 
-  const totalPages = Math.max(1, Math.ceil(todas.length / LIMIT));
-  const pagina = todas.slice((currentPage - 1) * LIMIT, currentPage * LIMIT);
+  const filtradas = useMemo(() => {
+    if (!searchTerm.trim()) return todas;
+    const q = searchTerm.trim().toLowerCase();
+    return todas.filter(c =>
+      (c.numero_cj || '').toLowerCase().includes(q) ||
+      (c.adolescente_nombre || '').toLowerCase().includes(q) ||
+      (c.adolescente_iniciales || '').toLowerCase().includes(q)
+    );
+  }, [todas, searchTerm]);
+
+  const totalPages = Math.max(1, Math.ceil(filtradas.length / LIMIT));
+  const pagina = filtradas.slice((currentPage - 1) * LIMIT, currentPage * LIMIT);
 
   return (
     <div className="space-y-6">
@@ -134,7 +143,7 @@ const ListaMedidasCautelares = () => {
             <div className="inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
             <p className="mt-4 text-gray-600">Cargando...</p>
           </div>
-        ) : todas.length === 0 ? (
+        ) : filtradas.length === 0 ? (
           <div className="p-12 text-center">
             <Shield className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-600">No hay carpetas CJ con medidas cautelares aplicadas</p>
@@ -189,10 +198,10 @@ const ListaMedidasCautelares = () => {
           </table>
         )}
 
-        {todas.length > 0 && (
+        {filtradas.length > 0 && (
           <div className="flex justify-between items-center px-6 py-4 border-t bg-gray-50">
             <span className="text-sm text-gray-600">
-              Mostrando {((currentPage - 1) * LIMIT) + 1}–{Math.min(currentPage * LIMIT, todas.length)} de {todas.length}
+              Mostrando {((currentPage - 1) * LIMIT) + 1}–{Math.min(currentPage * LIMIT, filtradas.length)} de {filtradas.length}
             </span>
             <div className="flex gap-2">
               <Button variant="secondary" size="sm" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>

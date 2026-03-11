@@ -1,5 +1,5 @@
 // src/pages/cjo/ListaCJO.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Eye, Edit, Trash2, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -10,42 +10,40 @@ import Input from '../../components/common/Input';
 import Select from '../../components/common/Select';
 import { formatDate } from '../../utils/formatters';
 
+const LIMIT = 10;
+
 const ListaCJO = () => {
   const navigate = useNavigate();
-  const [carpetas, setCarpetas] = useState([]);
+  const [todas, setTodas] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
     fuero: '',
     sentencia: ''
   });
-
   const [currentPage, setCurrentPage] = useState(1);
-  const [pagination, setPagination] = useState({
-    total: 0,
-    totalPages: 1,
-    limit: 10
-  });
 
-  useEffect(() => {
-    loadCarpetas();
-  }, [filters, currentPage]);
+  useEffect(() => { loadCarpetas(); }, []);
 
   const loadCarpetas = async () => {
     setIsLoading(true);
     try {
-      const params = {};
+      let allData = [];
+      let page = 1;
+      const limit = 50;
 
-      if (filters.fuero) params.fuero = filters.fuero;
-      if (filters.sentencia) params.sentencia = filters.sentencia;
+      while (true) {
+        const response = await cjoService.getAll({ page, limit });
+        const data = Array.isArray(response) ? response : (response.data || []);
+        const total = response.pagination?.total ?? data.length;
 
-      params.page = currentPage;
-      params.limit = 10;
+        allData = [...allData, ...data];
+        if (allData.length >= total || data.length < limit) break;
+        page++;
+      }
 
-      const response = await cjoService.getAll(params);
-
-      setCarpetas(response.data || []);
-      setPagination(response.pagination || { total: 0, totalPages: 1, limit: 10 });
+      setTodas(allData);
+      setCurrentPage(1);
     } catch (error) {
       toast.error('Error al cargar carpetas CJO');
       console.error(error);
@@ -57,29 +55,10 @@ const ListaCJO = () => {
   const handleClearFilters = () => {
     setSearchTerm('');
     setFilters({ fuero: '', sentencia: '' });
+    setCurrentPage(1);
   };
 
-  const handleSearch = async () => {
-
-    if (!searchTerm.trim()) {
-      loadCarpetas();
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const response = await cjoService.getAll({ search: searchTerm });
-
-      const data = Array.isArray(response) ? response : (response.data || []);
-
-      setCarpetas(data);
-    } catch (error) {
-      console.error('❌ Error en búsqueda:', error);
-      toast.error('Error en la búsqueda');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const handleSearch = () => setCurrentPage(1);
 
   const handleDelete = async (id) => {
     if (!confirm('¿Estás seguro de eliminar esta carpeta CJO? Esta acción no se puede deshacer.')) return;
@@ -92,6 +71,27 @@ const ListaCJO = () => {
       toast.error(error.response?.data?.message || 'Error al eliminar carpeta CJO');
     }
   };
+
+  const filtradas = useMemo(() => {
+    let data = todas;
+    if (searchTerm.trim()) {
+      const q = searchTerm.trim().toLowerCase();
+      data = data.filter(c =>
+        (c.numero_cjo || '').toLowerCase().includes(q) ||
+        (c.numero_cj || '').toLowerCase().includes(q) ||
+        (c.adolescente_nombre || '').toLowerCase().includes(q) ||
+        (c.adolescente_iniciales || '').toLowerCase().includes(q)
+      );
+    }
+    if (filters.fuero) data = data.filter(c => c.fuero === filters.fuero);
+    if (filters.sentencia) data = data.filter(c => c.sentencia === filters.sentencia);
+    return data;
+  }, [todas, searchTerm, filters]);
+
+  useEffect(() => { setCurrentPage(1); }, [searchTerm, filters]);
+
+  const totalPages = Math.max(1, Math.ceil(filtradas.length / LIMIT));
+  const pagina = filtradas.slice((currentPage - 1) * LIMIT, currentPage * LIMIT);
 
   return (
     <div className="space-y-6">
@@ -109,7 +109,7 @@ const ListaCJO = () => {
           <div className="flex-1">
             <Input
               icon={Search}
-              placeholder="Buscar por número CJO..."
+              placeholder="Buscar por número CJO, CJ o nombre..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
@@ -157,7 +157,7 @@ const ListaCJO = () => {
             <div className="inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
             <p className="mt-4 text-gray-600">Cargando carpetas CJO...</p>
           </div>
-        ) : carpetas.length === 0 ? (
+        ) : filtradas.length === 0 ? (
           <div className="p-12 text-center">
             <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-600 mb-2">No hay carpetas CJO</p>
@@ -191,7 +191,7 @@ const ListaCJO = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {carpetas.map((carpeta) => (
+              {pagina.map((carpeta) => (
                 <tr key={carpeta.id_cjo} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
@@ -264,29 +264,31 @@ const ListaCJO = () => {
             </tbody>
           </table>
         )}
-        <div className="flex justify-between items-center p-4 border-t">
-          <div className="text-sm text-gray-600">
-            Página {pagination.page} de {pagination.totalPages}
+        {filtradas.length > 0 && (
+          <div className="flex justify-between items-center px-6 py-4 border-t bg-gray-50">
+            <span className="text-sm text-gray-600">
+              Mostrando {((currentPage - 1) * LIMIT) + 1}–{Math.min(currentPage * LIMIT, filtradas.length)} de {filtradas.length}
+            </span>
+            <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(prev => prev - 1)}
+              >
+                Anterior
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(prev => prev + 1)}
+              >
+                Siguiente
+              </Button>
+            </div>
           </div>
-
-          <div className="flex gap-2">
-            <Button
-              variant="secondary"
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage(prev => prev - 1)}
-            >
-              Anterior
-            </Button>
-
-            <Button
-              variant="secondary"
-              disabled={currentPage === pagination.totalPages}
-              onClick={() => setCurrentPage(prev => prev + 1)}
-            >
-              Siguiente
-            </Button>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

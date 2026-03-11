@@ -24,7 +24,7 @@ const ListaCJ = () => {
   });
   const [currentPage, setCurrentPage] = useState(1);
 
-  const loadCarpetas = async (search = '', fuero = '') => {
+  const loadCarpetas = async (fuero = '') => {
     setIsLoading(true);
     try {
       let allData = [];
@@ -33,7 +33,6 @@ const ListaCJ = () => {
 
       while (true) {
         const params = { page, limit };
-        if (search) params.search = search;
         if (fuero) params.tipo_fuero = fuero;
         const response = await cjService.getAll(params);
         const data = Array.isArray(response) ? response : (response.data || []);
@@ -56,31 +55,40 @@ const ListaCJ = () => {
 
   useEffect(() => { loadCarpetas(); }, []);
 
-  const handleSearch = () => loadCarpetas(searchTerm.trim(), filters.tipo_fuero);
+  const handleSearch = () => setCurrentPage(1);
 
   const handleClearSearch = () => {
     setSearchTerm('');
     setFilters({ tipo_fuero: '', con_cjo: '', con_medidas: '' });
-    loadCarpetas('', '');
+    loadCarpetas('');
   };
 
   const handleFueroChange = (e) => {
     const val = e.target.value;
     setFilters(prev => ({ ...prev, tipo_fuero: val }));
-    loadCarpetas(searchTerm.trim(), val);
+    loadCarpetas(val);
   };
 
-  // Filtros client-side (con_cjo, con_medidas)
+  // Filtros client-side (texto + con_cjo + con_medidas)
   const filtradas = useMemo(() => {
     let data = todas;
+    if (searchTerm.trim()) {
+      const q = searchTerm.trim().toLowerCase();
+      data = data.filter(c =>
+        (c.numero_cj || '').toLowerCase().includes(q) ||
+        (c.numero_cjo || '').toLowerCase().includes(q) ||
+        (c.adolescente_nombre || '').toLowerCase().includes(q) ||
+        (c.adolescente_iniciales || '').toLowerCase().includes(q)
+      );
+    }
     if (filters.con_cjo === '1') data = data.filter(c => c.id_cjo);
     else if (filters.con_cjo === '0') data = data.filter(c => !c.id_cjo);
     if (filters.con_medidas === '1') data = data.filter(c => Number(c.total_medidas_cautelares) > 0);
     else if (filters.con_medidas === '0') data = data.filter(c => Number(c.total_medidas_cautelares) === 0);
     return data;
-  }, [todas, filters.con_cjo, filters.con_medidas]);
+  }, [todas, searchTerm, filters]);
 
-  useEffect(() => { setCurrentPage(1); }, [filters.con_cjo, filters.con_medidas]);
+  useEffect(() => { setCurrentPage(1); }, [searchTerm, filters.con_cjo, filters.con_medidas]);
 
   const totalPages = Math.max(1, Math.ceil(filtradas.length / LIMIT));
   const pagina = filtradas.slice((currentPage - 1) * LIMIT, currentPage * LIMIT);
@@ -91,7 +99,7 @@ const ListaCJ = () => {
     try {
       await cjService.delete(id);
       toast.success('Carpeta eliminada correctamente');
-      loadCarpetas(searchTerm.trim(), filters.tipo_fuero);
+      loadCarpetas(filters.tipo_fuero);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Error al eliminar carpeta');
     }

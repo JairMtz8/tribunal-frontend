@@ -20,10 +20,10 @@ const ListaCEMS = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   // Carga completa sin paginación server-side
-  const loadCarpetas = async (search = '') => {
+  const loadCarpetas = async () => {
     setIsLoading(true);
     try {
-      const response = await cemsService.getAll({ limit: 1000, search });
+      const response = await cemsService.getAll({ limit: 1000 });
       setTodas(response.data || []);
       setCurrentPage(1);
     } catch {
@@ -35,20 +35,29 @@ const ListaCEMS = () => {
 
   useEffect(() => { loadCarpetas(); }, []);
 
-  const handleSearch = () => loadCarpetas(searchTerm.trim());
+  const handleSearch = () => setCurrentPage(1);
 
   const handleClearSearch = () => {
     setSearchTerm('');
     setFiltroMedidas('');
-    loadCarpetas('');
+    setCurrentPage(1);
   };
 
-  // Filtrado client-side
+  // Filtrado client-side (texto + medidas)
   const filtradas = useMemo(() => {
-    if (filtroMedidas === '1') return todas.filter(c => Number(c.total_medidas) > 0);
-    if (filtroMedidas === '0') return todas.filter(c => Number(c.total_medidas) === 0);
-    return todas;
-  }, [todas, filtroMedidas]);
+    let data = todas;
+    if (searchTerm.trim()) {
+      const q = searchTerm.trim().toLowerCase();
+      data = data.filter(c =>
+        (c.numero_cems || '').toLowerCase().includes(q) ||
+        (c.numero_cj || '').toLowerCase().includes(q) ||
+        (c.numero_cjo || '').toLowerCase().includes(q)
+      );
+    }
+    if (filtroMedidas === '1') return data.filter(c => Number(c.total_medidas) > 0);
+    if (filtroMedidas === '0') return data.filter(c => Number(c.total_medidas) === 0);
+    return data;
+  }, [todas, searchTerm, filtroMedidas]);
 
   // Paginación client-side sobre los filtrados
   const totalPages = Math.max(1, Math.ceil(filtradas.length / LIMIT));
@@ -62,7 +71,7 @@ const ListaCEMS = () => {
     try {
       await cemsService.delete(id);
       toast.success('Carpeta CEMS eliminada correctamente');
-      loadCarpetas(searchTerm.trim());
+      loadCarpetas();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Error al eliminar carpeta CEMS');
     }

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(for f in ListaCJ ListaCJO ListaCEMCI ListaCEMS ListaEjecucion ListaMedidasCautelares ListaMedidasSancionadoras ListaUsuarios)",
+      "Bash(do)",
+      "Bash(echo \"=== $f ===\")",
+      "Bash(__NEW_LINE_23a377bbae786d6c__ grep -n \"filter\\\\|searchTerm\\\\|includes\\\\|search\\\\|numero\\\\|cj_numero\\\\|numero_cj\" /c/Users/PC/Desktop/estadia/tribunal-frontend/src/pages/**/$f.jsx)",
+      "Read(//c/Users/PC/Desktop/estadia/tribunal-frontend/src/pages/*/**)",
+      "Bash(done)",
+      "Bash(ls:*)"
+    ]
+  }
+}

@@ -1,5 +1,5 @@
 // src/pages/cemci/ListaCEMCI.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Eye, Edit, Trash2, FileText, Shield, ShieldCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -11,9 +11,11 @@ import Input from '../../components/common/Input';
 import Select from '../../components/common/Select';
 import { formatDate } from '../../utils/formatters';
 
+const LIMIT = 10;
+
 const ListaCEMCI = () => {
   const navigate = useNavigate();
-  const [carpetas, setCarpetas] = useState([]);
+  const [todas, setTodas] = useState([]);
   const [estadosProcesales, setEstadosProcesales] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -21,16 +23,12 @@ const ListaCEMCI = () => {
     estado_procesal_id: '',
     concluido: ''
   });
-
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const limit = 10;
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     loadEstadosProcesales();
     loadCarpetas();
-  }, [filters, page]);
-
+  }, []);
 
   const loadEstadosProcesales = async () => {
     try {
@@ -45,27 +43,23 @@ const ListaCEMCI = () => {
   const loadCarpetas = async () => {
     setIsLoading(true);
     try {
-      const params = {
-        page,
-        limit
-      };
+      let allData = [];
+      let page = 1;
+      const limit = 50;
 
-      if (filters.estado_procesal_id)
-        params.estado_procesal_id = Number(filters.estado_procesal_id);
+      while (true) {
+        const response = await cemciService.getAll({ page, limit });
+        const data = (Array.isArray(response) ? response : (response.data || [])).filter(c => c.id_cemci);
+        const total = response.totalPages ? response.totalPages * limit : data.length;
 
-      if (filters.concluido !== '')
-        params.concluido = filters.concluido;
+        allData = [...allData, ...data];
+        const hasMore = response.totalPages ? page < response.totalPages : data.length === limit;
+        if (!hasMore) break;
+        page++;
+      }
 
-      if (searchTerm)
-        params.search = searchTerm;
-
-      const response = await cemciService.getAll(params);
-
-      // Solo mostrar registros que tienen CEMCI asignado
-      const data = (response.data || []).filter(c => c.id_cemci);
-      setCarpetas(data);
-      setTotalPages(response.totalPages || 1);
-
+      setTodas(allData);
+      setCurrentPage(1);
     } catch (error) {
       toast.error('Error al cargar carpetas CEMCI');
       console.error(error);
@@ -74,27 +68,12 @@ const ListaCEMCI = () => {
     }
   };
 
-  const handleSearch = async () => {
-    if (!searchTerm.trim()) {
-      loadCarpetas();
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const response = await cemciService.getAll({ search: searchTerm });
-      const data = (Array.isArray(response) ? response : (response.data || [])).filter(c => c.id_cemci);
-      setCarpetas(data);
-    } catch (error) {
-      toast.error('Error en la búsqueda');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const handleSearch = () => setCurrentPage(1);
 
   const handleClearFilters = () => {
     setSearchTerm('');
     setFilters({ estado_procesal_id: '', concluido: '' });
+    setCurrentPage(1);
   };
 
   const handleDelete = async (id) => {
@@ -108,6 +87,29 @@ const ListaCEMCI = () => {
       toast.error(error.response?.data?.message || 'Error al eliminar carpeta CEMCI');
     }
   };
+
+  const filtradas = useMemo(() => {
+    let data = todas;
+    if (searchTerm.trim()) {
+      const q = searchTerm.trim().toLowerCase();
+      data = data.filter(c =>
+        (c.numero_cemci || '').toLowerCase().includes(q) ||
+        (c.numero_cj || '').toLowerCase().includes(q)
+      );
+    }
+    if (filters.estado_procesal_id) {
+      data = data.filter(c => String(c.estado_procesal_id) === String(filters.estado_procesal_id));
+    }
+    if (filters.concluido !== '') {
+      data = data.filter(c => String(c.concluido) === filters.concluido);
+    }
+    return data;
+  }, [todas, searchTerm, filters]);
+
+  useEffect(() => { setCurrentPage(1); }, [searchTerm, filters]);
+
+  const totalPages = Math.max(1, Math.ceil(filtradas.length / LIMIT));
+  const pagina = filtradas.slice((currentPage - 1) * LIMIT, currentPage * LIMIT);
 
   return (
     <div className="space-y-6">
@@ -185,7 +187,7 @@ const ListaCEMCI = () => {
             <div className="inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
             <p className="mt-4 text-gray-600">Cargando carpetas CEMCI...</p>
           </div>
-        ) : carpetas.length === 0 ? (
+        ) : filtradas.length === 0 ? (
           <div className="p-12 text-center">
             <Shield className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-600 mb-2">No hay carpetas CEMCI</p>
@@ -204,7 +206,7 @@ const ListaCEMCI = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {carpetas.map((carpeta) => (
+              {pagina.map((carpeta) => (
                 <tr key={carpeta.id_cemci} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {carpeta.numero_cemci}
@@ -269,27 +271,29 @@ const ListaCEMCI = () => {
             </tbody>
           </table>
         )}
-        <div className="flex justify-between items-center px-6 py-4 border-t bg-gray-50">
-          <button
-            onClick={() => setPage(prev => Math.max(prev - 1, 1))}
-            disabled={page === 1}
-            className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
-          >
-            Anterior
-          </button>
-
-          <span className="text-sm text-gray-600">
-            Página {page} de {totalPages}
-          </span>
-
-          <button
-            onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
-            disabled={page === totalPages}
-            className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
-          >
-            Siguiente
-          </button>
-        </div>
+        {filtradas.length > 0 && (
+          <div className="flex justify-between items-center px-6 py-4 border-t bg-gray-50">
+            <span className="text-sm text-gray-600">
+              Mostrando {((currentPage - 1) * LIMIT) + 1}–{Math.min(currentPage * LIMIT, filtradas.length)} de {filtradas.length}
+            </span>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+              >
+                Anterior
+              </button>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
