@@ -100,7 +100,7 @@ const Login = () => {
         </div>
 
         <div className="relative z-10 text-blue-300 text-sm">
-          <p>© 2025 Tribunal de Justicia para Adolescentes</p>
+          <p>© 2026 Tribunal de Justicia para Adolescentes</p>
           <p>Estado de Morelos, México</p>
         </div>
       </div>

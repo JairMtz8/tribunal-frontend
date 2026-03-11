@@ -58,6 +58,11 @@ const ListaMedidasSancionadoras = () => {
           // Si no hay candidatos (caso extremo), usar todas
           const medidasBase = candidatos.length > 0 ? candidatos : medidasDelProceso;
 
+          const tienePrivativa = medidasBase.some(m => m.es_privativa);
+          const tieneNoPrivativa = medidasBase.some(m => !m.es_privativa);
+
+          const tipoSentencia = (tienePrivativa && tieneNoPrivativa) ? 'MIXTA' : 'UNICA';
+
           // Tipos según filtro
           const tiposMedidas = medidasBase.map(m => m.tipo_nombre);
 
@@ -71,7 +76,8 @@ const ListaMedidasSancionadoras = () => {
           medidasAgrupadas.push({
             ...medidaMayor,
             total_medidas_proceso: medidasBase.length,
-            tipos_medidas: tiposMedidas
+            tipos_medidas: tiposMedidas,
+            tipo_sentencia: tipoSentencia
           });
         }
       });
@@ -188,6 +194,9 @@ const ListaMedidasSancionadoras = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   Tipo
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Tipo Sentencia
+                </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
                   Acciones
                 </th>
@@ -240,6 +249,17 @@ const ListaMedidasSancionadoras = () => {
                     ) : (
                       <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
                         No Privativa
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {medida.tipo_sentencia === 'MIXTA' ? (
+                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                        Mixta
+                      </span>
+                    ) : (
+                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                        Única
                       </span>
                     )}
                   </td>

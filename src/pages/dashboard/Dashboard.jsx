@@ -137,7 +137,7 @@ const Dashboard = () => {
                 />
                 <div>
                   <h1 className="text-3xl font-bold text-white">
-                    Tribunal para Adolescentes
+                    TUJPA
                   </h1>
                   <p className="text-blue-100 text-lg">
                     Sistema de Gestión Judicial
